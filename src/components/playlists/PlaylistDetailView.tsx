@@ -7,7 +7,10 @@ import {
   Search,
   Check,
   Clock,
-  ExternalLink
+  ExternalLink,
+  ChevronUp,
+  ChevronDown,
+  Trash2,
 } from '../common/focusIcons';
 import { Playlist, Video } from '../../types/focusLearn';
 import { useLearning } from '../../context/LearningContext';
@@ -21,9 +24,17 @@ interface PlaylistDetailViewProps {
 export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
   playlist,
   onBack,
-  onPlayVideo
+  onPlayVideo,
 }) => {
-  const { progress, markVideoComplete, toggleBookmark, isBookmarked } = useLearning();
+  const {
+    progress,
+    markVideoComplete,
+    toggleBookmark,
+    isBookmarked,
+    reorderPlaylistVideos,
+    deleteVideo,
+  } = useLearning();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'uncompleted'>('all');
 
@@ -55,6 +66,18 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
     if (statusFilter === 'uncompleted') return matchesSearch && !isDone;
     return matchesSearch;
   });
+
+  const handleMoveVideo = (index: number, direction: 'up' | 'down') => {
+    const newIdx = direction === 'up' ? index - 1 : index + 1;
+    if (newIdx < 0 || newIdx >= playlistVideos.length) return;
+
+    const newOrder = [...playlistVideos];
+    const temp = newOrder[index];
+    newOrder[index] = newOrder[newIdx];
+    newOrder[newIdx] = temp;
+
+    reorderPlaylistVideos(playlist.id, newOrder.map((v) => v.id));
+  };
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto font-sans">
@@ -162,8 +185,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
           ) : (
             filteredVideos.map((video, idx) => {
               const prog = progress[video.id];
-              const isCompleted = prog?.status === 'completed';
-              const isInProgress = prog?.status === 'in_progress';
+              const isCompleted = prog?.status === 'completed' || (prog?.status as string) === 'COMPLETED';
               const bookmarked = isBookmarked(video.id);
 
               return (
@@ -173,8 +195,28 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
                     isCompleted ? 'bg-[#F9FCF9]' : 'hover:bg-[#F4F0EA]'
                   }`}
                 >
-                  {/* Left: Thumbnail & Title */}
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                  {/* Left: Reorder Buttons, Index, Thumbnail & Title */}
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {/* Reorder Up/Down */}
+                    <div className="flex flex-col gap-0.5 shrink-0 mt-0.5">
+                      <button
+                        disabled={idx === 0}
+                        onClick={() => handleMoveVideo(idx, 'up')}
+                        className="p-0.5 hover:bg-gray-200 rounded disabled:opacity-20 cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5 text-black" />
+                      </button>
+                      <button
+                        disabled={idx === playlistVideos.length - 1}
+                        onClick={() => handleMoveVideo(idx, 'down')}
+                        className="p-0.5 hover:bg-gray-200 rounded disabled:opacity-20 cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5 text-black" />
+                      </button>
+                    </div>
+
                     {/* Index */}
                     <span className="w-7 h-7 bg-[#F4F0EA] border-2 border-black rounded flex items-center justify-center font-mono text-xs font-black shrink-0 mt-1 shadow-[1px_1px_0px_#000]">
                       {idx + 1}
@@ -186,7 +228,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
                       className="w-24 h-14 bg-black border-2 border-black rounded overflow-hidden relative cursor-pointer shrink-0 shadow-[2px_2px_0px_#000] group"
                     >
                       <img
-                        src={video.thumbnailUrl}
+                        src={video.thumbnailUrl || video.thumbnail}
                         alt={video.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />

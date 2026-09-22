@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bookmark, Play, Trash2, ArrowRight } from '../common/focusIcons';
+import { Bookmark, Play, Trash2, ArrowRight, Clock } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 
 interface BookmarksViewProps {
@@ -7,16 +7,31 @@ interface BookmarksViewProps {
 }
 
 export const BookmarksView: React.FC<BookmarksViewProps> = ({ onPlayVideo }) => {
-  const { bookmarks, allVideos, toggleBookmark, setActiveTab } = useLearning();
+  const { bookmarks, allVideos, toggleBookmark, setActiveTab, updateVideoProgress } = useLearning();
 
   const bookmarkedVideos = React.useMemo(() => {
     return bookmarks
       .map((b) => {
         const video = allVideos.find((v) => v.id === b.videoId);
-        return video ? { ...video, bookmarkedAt: b.createdAt } : null;
+        return video
+          ? {
+              ...video,
+              bookmarkId: b.id,
+              timestampSeconds: b.timestampSeconds || 0,
+              timestampFormatted: b.timestampFormatted,
+              bookmarkedAt: b.createdAt,
+            }
+          : null;
       })
       .filter((v): v is NonNullable<typeof v> => v !== null);
   }, [bookmarks, allVideos]);
+
+  const handlePlayBookmark = (videoId: string, timestampSeconds?: number) => {
+    if (timestampSeconds && timestampSeconds > 0) {
+      updateVideoProgress(videoId, timestampSeconds);
+    }
+    onPlayVideo(videoId);
+  };
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto font-sans">
@@ -47,7 +62,11 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({ onPlayVideo }) => 
             No Bookmarks Yet
           </h3>
           <p className="text-xs font-medium text-gray-600 mb-6 leading-relaxed">
-            While watching any tutorial or lecture, click the bookmark icon or press <kbd className="font-mono bg-gray-100 border border-gray-400 px-1.5 py-0.5 rounded">B</kbd> to save it here for fast revision.
+            While watching any tutorial or lecture, click the bookmark icon or press{' '}
+            <kbd className="font-mono bg-gray-100 border border-gray-400 px-1.5 py-0.5 rounded">
+              B
+            </kbd>{' '}
+            to save it here for fast revision.
           </p>
           <button
             onClick={() => setActiveTab('my-videos')}
@@ -66,7 +85,7 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({ onPlayVideo }) => 
             >
               {/* Thumbnail */}
               <div
-                onClick={() => onPlayVideo(video.id)}
+                onClick={() => handlePlayBookmark(video.id, video.timestampSeconds)}
                 className="relative aspect-video bg-black cursor-pointer group"
               >
                 <img
@@ -84,6 +103,12 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({ onPlayVideo }) => 
                     {video.duration}
                   </div>
                 )}
+                {video.timestampFormatted && (
+                  <div className="absolute top-2 left-2 bg-[#FFE600] text-black font-mono text-[10px] font-black px-1.5 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000] flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>@{video.timestampFormatted}</span>
+                  </div>
+                )}
               </div>
 
               {/* Info */}
@@ -94,7 +119,7 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({ onPlayVideo }) => 
                   </span>
 
                   <h3
-                    onClick={() => onPlayVideo(video.id)}
+                    onClick={() => handlePlayBookmark(video.id, video.timestampSeconds)}
                     className="font-black text-sm text-black line-clamp-2 hover:text-[#B45309] cursor-pointer leading-snug"
                   >
                     {video.title}
@@ -112,7 +137,7 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({ onPlayVideo }) => 
                   </button>
 
                   <button
-                    onClick={() => onPlayVideo(video.id)}
+                    onClick={() => handlePlayBookmark(video.id, video.timestampSeconds)}
                     className="bg-[#FFE600] border-2 border-black px-3 py-1 rounded-lg text-xs font-black uppercase text-black hover:bg-[#FFD000] shadow-[2px_2px_0px_#000] cursor-pointer flex items-center gap-1"
                   >
                     <Play className="w-3 h-3 fill-black" />

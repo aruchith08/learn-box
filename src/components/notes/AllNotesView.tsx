@@ -7,18 +7,19 @@ interface AllNotesViewProps {
 }
 
 export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
-  const { notes, deleteNote, setActiveTab } = useLearning();
+  const { notes, deleteNote, setActiveTab, updateVideoProgress } = useLearning();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredNotes = notes.filter((n) =>
-    n.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    n.videoTitle.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredNotes = notes.filter(
+    (n) =>
+      n.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      n.videoTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleExportMarkdown = () => {
-    let md = `# FOCUS LEARN - Study Notes\nExported on: ${new Date().toLocaleDateString()}\n\n`;
+    let md = `# FOCUS LEARN - Study Notes & Takeaways\nExported on: ${new Date().toLocaleDateString()}\n\n`;
     notes.forEach((note, idx) => {
-      md += `### ${idx + 1}. ${note.videoTitle} (@ ${note.timestampFormatted})\n`;
+      md += `### ${idx + 1}. ${note.videoTitle} (@ ${note.timestampFormatted || '0:00'})\n`;
       md += `${note.content}\n\n`;
     });
 
@@ -29,6 +30,13 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
     a.download = `focus-learn-notes-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handlePlayWithTimestamp = (videoId: string, seconds?: number) => {
+    if (seconds && seconds > 0) {
+      updateVideoProgress(videoId, seconds);
+    }
+    onPlayVideo(videoId);
   };
 
   return (
@@ -66,7 +74,7 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
       {/* Search Bar */}
       <div className="mb-6 max-w-md">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 stroke-[2.5]" />
           <input
             type="text"
             value={searchQuery}
@@ -87,7 +95,11 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
             No Notes Found
           </h3>
           <p className="text-xs font-medium text-gray-600 mb-6 leading-relaxed">
-            While learning from any video, click the "Take Note" button or hit <kbd className="font-mono bg-gray-100 border border-gray-400 px-1 py-0.5 rounded">N</kbd> to record timestamped takeaways.
+            While learning from any video, click the "Take Note" button or hit{' '}
+            <kbd className="font-mono bg-gray-100 border border-gray-400 px-1 py-0.5 rounded">
+              N
+            </kbd>{' '}
+            to record timestamped takeaways.
           </p>
           <button
             onClick={() => setActiveTab('my-videos')}
@@ -107,12 +119,12 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <button
-                    onClick={() => onPlayVideo(note.videoId)}
+                    onClick={() => handlePlayWithTimestamp(note.videoId, note.timestampSeconds)}
                     className="bg-[#FFE600] border-2 border-black px-2 py-0.5 rounded text-[11px] font-mono font-black text-black hover:bg-black hover:text-[#FFE600] transition-colors cursor-pointer flex items-center gap-1 shadow-[1px_1px_0px_#000]"
-                    title="Jump to video"
+                    title="Jump to video moment"
                   >
                     <Clock className="w-3 h-3" />
-                    <span>@ {note.timestampFormatted}</span>
+                    <span>@ {note.timestampFormatted || '0:00'}</span>
                   </button>
 
                   <button
@@ -125,7 +137,7 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
                 </div>
 
                 <h4
-                  onClick={() => onPlayVideo(note.videoId)}
+                  onClick={() => handlePlayWithTimestamp(note.videoId, note.timestampSeconds)}
                   className="font-black text-xs text-gray-500 uppercase tracking-wider mb-2 line-clamp-1 hover:text-black cursor-pointer"
                 >
                   {note.videoTitle}
@@ -142,7 +154,7 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
                 </span>
 
                 <button
-                  onClick={() => onPlayVideo(note.videoId)}
+                  onClick={() => handlePlayWithTimestamp(note.videoId, note.timestampSeconds)}
                   className="text-xs font-black uppercase text-black hover:text-[#B45309] flex items-center gap-1 cursor-pointer"
                 >
                   <Play className="w-3 h-3 fill-black" />

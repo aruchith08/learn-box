@@ -24,13 +24,13 @@ function resolveApiKey(): string {
 }
 
 export const firebaseConfig = {
-  apiKey: resolveApiKey(),
-  authDomain: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN) || "abdul-bari-dsa-with-problems.firebaseapp.com",
-  projectId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || "abdul-bari-dsa-with-problems",
-  storageBucket: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET) || "abdul-bari-dsa-with-problems.firebasestorage.app",
-  messagingSenderId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID) || "246123352133",
-  appId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_APP_ID) || "1:246123352133:web:0f0fbb56645859e15cd32c",
-  measurementId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_MEASUREMENT_ID) || "G-11V97PM31Q",
+  apiKey: "AIzaSyDMbduqvx_4zcnZ17jR22mYleUrZyZbsHc",
+  authDomain: "learn-box-1c4ae.firebaseapp.com",
+  projectId: "learn-box-1c4ae",
+  storageBucket: "learn-box-1c4ae.firebasestorage.app",
+  messagingSenderId: "319518695630",
+  appId: "1:319518695630:web:90123dab81c405fbdff09f",
+  measurementId: "G-GZ9X2EDR2W",
 };
 
 // Resilient Firebase App Initialization (never crashes app if configuration fails)

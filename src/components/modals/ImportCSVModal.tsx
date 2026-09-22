@@ -11,14 +11,14 @@ interface ImportCSVModalProps {
 
 export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
   isOpen,
-  onClose
+  onClose,
 }) => {
   const { allVideos, importPlaylistFromCSV } = useLearning();
 
   const [playlistTitle, setPlaylistTitle] = useState('');
   const [csvContent, setCsvContent] = useState('');
   const [fileName, setFileName] = useState('');
-  const [preview, setPreview] = useState<CSVImportPreview | null>(null);
+  const [preview, setPreview] = useState<ReturnType<typeof generateImportPreview> | null>(null);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
 
   if (!isOpen) return null;
@@ -29,7 +29,11 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
 
     setFileName(file.name);
     if (!playlistTitle) {
-      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/Links_/i, '').replace(/_/g, ' ');
+      const cleanName = file.name
+        .replace(/\.[^/.]+$/, '')
+        .replace(/Links_/i, '')
+        .replace(/_+/g, ' ')
+        .trim();
       setPlaylistTitle(cleanName);
     }
 
@@ -71,8 +75,8 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
         youtubeId: v.youtubeId,
         title: v.title,
         topic: v.topic,
-        category: 'Imported Playlist',
-        duration: '20:00'
+        category: playlistTitle.trim(),
+        duration: '20:00',
       }))
     );
 
@@ -83,6 +87,10 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
     setFileName('');
     onClose();
   };
+
+  const validVideosCount = preview
+    ? preview.videos.length
+    : 0;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans animate-in fade-in duration-150">
@@ -96,13 +104,13 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
 
         <div className="mb-4">
           <span className="text-[10px] font-black uppercase tracking-wider bg-[#A7F3D0] text-black px-2 py-0.5 rounded border border-black">
-            SPREADSHEET PARSER
+            CSV PLAYLIST IMPORTER
           </span>
           <h2 className="text-xl font-black text-black uppercase tracking-tight mt-1">
             IMPORT PLAYLIST FROM CSV
           </h2>
           <p className="text-xs font-bold text-gray-600 mt-0.5">
-            Auto-detects video URLs, titles, and topics with duplicate preview.
+            Flexible URL column detection (URL, Link, YouTube URL, Video URL).
           </p>
         </div>
 
@@ -110,14 +118,14 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
           {/* Playlist Title */}
           <div>
             <label className="block text-xs font-black uppercase text-black mb-1">
-              Course / Playlist Name *
+              Playlist Title *
             </label>
             <input
               type="text"
               required
               value={playlistTitle}
               onChange={(e) => setPlaylistTitle(e.target.value)}
-              placeholder="e.g. Distributed Systems Masterclass"
+              placeholder="e.g. Java + DSA in 30 Days"
               className="w-full bg-white border-2 border-black rounded-lg px-3 py-2 text-xs font-bold shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#FFE600]"
             />
           </div>
@@ -139,7 +147,7 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
                 {fileName ? fileName : 'Choose CSV file or drag & drop here'}
               </div>
               <div className="text-[10px] font-bold text-gray-500 mt-0.5">
-                Columns supported: URL, Title, Topic (auto-detected)
+                Columns supported: URL, Link, YouTube URL, Video URL, Title, Topic
               </div>
             </div>
           </div>
@@ -158,33 +166,39 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
             />
           </div>
 
-          {/* Live Preview Audit Card */}
+          {/* Live Preview Audit Card matching prompt specification */}
           {preview && (
-            <div className="bg-white border-3 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000] space-y-3">
+            <div className="bg-white border-3 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000] space-y-3">
               <div className="flex items-center justify-between pb-2 border-b-2 border-black">
-                <span className="text-xs font-black uppercase text-black">
-                  IMPORT AUDIT PREVIEW
+                <span className="text-xs font-black uppercase tracking-wider text-black">
+                  IMPORT PREVIEW
                 </span>
-                <span className="text-[10px] font-mono font-black bg-[#FFE600] px-2 py-0.5 rounded border border-black">
-                  {preview.totalRows} Total Rows
+                <span className="text-xs font-black text-black bg-[#FEF08A] border border-black px-2 py-0.5 rounded">
+                  {playlistTitle.trim() || 'Untitled Playlist'}
                 </span>
               </div>
 
-              {/* Stats badges */}
-              <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                <div className="bg-[#A7F3D0] border-2 border-black rounded-lg p-2">
-                  <div className="text-lg font-black">{preview.newVideosCount}</div>
-                  <div className="text-[10px] font-bold uppercase">New Videos</div>
+              {/* Exact summary lines requested by prompt */}
+              <div className="bg-[#F4F0EA] border-2 border-black rounded-lg p-3 space-y-1 text-xs font-mono">
+                <div className="flex justify-between">
+                  <span className="font-bold text-gray-700">Playlist:</span>
+                  <span className="font-black text-black">{playlistTitle.trim() || 'Untitled Playlist'}</span>
                 </div>
-
-                <div className="bg-[#FECDD3] border-2 border-black rounded-lg p-2">
-                  <div className="text-lg font-black">{preview.duplicateCount}</div>
-                  <div className="text-[10px] font-bold uppercase">Duplicates</div>
+                <div className="flex justify-between">
+                  <span className="font-bold text-gray-700">Total rows:</span>
+                  <span className="font-black text-black">{preview.totalRows}</span>
                 </div>
-
-                <div className="bg-[#DDD6FE] border-2 border-black rounded-lg p-2">
-                  <div className="text-lg font-black">{preview.invalidCount}</div>
-                  <div className="text-[10px] font-bold uppercase">Skipped</div>
+                <div className="flex justify-between">
+                  <span className="font-bold text-emerald-700">Valid videos:</span>
+                  <span className="font-black text-emerald-800">{validVideosCount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-bold text-red-700">Duplicates:</span>
+                  <span className="font-black text-red-800">{preview.duplicateCount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-bold text-gray-500">Invalid / Skipped:</span>
+                  <span className="font-black text-gray-700">{preview.invalidCount}</span>
                 </div>
               </div>
 
@@ -198,7 +212,7 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
                     className="w-4 h-4 accent-black cursor-pointer"
                   />
                   <span>
-                    Skip {preview.duplicateCount} duplicate videos already present in your library
+                    Skip {preview.duplicateCount} duplicate video(s) already present in library
                   </span>
                 </label>
               )}
@@ -214,7 +228,9 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
                         : 'bg-gray-50 border-gray-300 text-gray-800'
                     }`}
                   >
-                    <span className="truncate max-w-sm">{i + 1}. {v.title}</span>
+                    <span className="truncate max-w-sm">
+                      {i + 1}. {v.title}
+                    </span>
                     <span className="text-[10px] font-mono shrink-0 ml-2">
                       {v.isDuplicate ? 'DUPLICATE' : 'READY'}
                     </span>
@@ -240,9 +256,7 @@ export const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
               className="px-5 py-2 bg-[#FFE600] border-2 border-black rounded-lg text-xs font-black uppercase text-black shadow-[3px_3px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>
-                Confirm Import ({skipDuplicates ? preview?.newVideosCount || 0 : preview?.videos.length || 0} Videos)
-              </span>
+              <span>Import Playlist</span>
             </button>
           </div>
         </div>

@@ -14,7 +14,11 @@ import {
   Coffee,
   LineChart,
   Bot,
-  Binary
+  Binary,
+  Trash2,
+  Edit,
+  Copy,
+  FolderPlus,
 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { Playlist } from '../../types/focusLearn';
@@ -30,14 +34,19 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
   onSelectPlaylist,
   onPlayVideo,
   onOpenAddModal,
-  onOpenImportCSV
+  onOpenImportCSV,
 }) => {
-  const { playlists, progress } = useLearning();
+  const { playlists, progress, deletePlaylist, addPlaylist } = useLearning();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
 
-  const filteredPlaylists = playlists.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredPlaylists = playlists.filter(
+    (p) =>
+      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const getPlaylistStats = (pl: Playlist) => {
@@ -60,7 +69,7 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
     return {
       completed,
       percent,
-      firstUnfinished: firstUnfinishedId || vids[0]?.id
+      firstUnfinished: firstUnfinishedId || vids[0]?.id,
     };
   };
 
@@ -71,8 +80,30 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
     if (lower.includes('python')) return { icon: Terminal, bg: 'bg-[#A7F3D0]' };
     if (lower.includes('java') || lower.includes('dsa in 30')) return { icon: Coffee, bg: 'bg-[#FEF08A]' };
     if (lower.includes('data science')) return { icon: LineChart, bg: 'bg-[#BAE6FD]' };
-    if (lower.includes('ai agent') || lower.includes('building ai')) return { icon: Bot, bg: 'bg-[#FBCFE8]' };
+    if (lower.includes('ai agent') || lower.includes('building ai')) return { icon: Bot, bg: 'bg-[#FECDD3]' };
     return { icon: Binary, bg: 'bg-[#E9D5FF]' };
+  };
+
+  const handleDuplicatePlaylist = (pl: Playlist) => {
+    addPlaylist({
+      title: `${pl.title} (Copy)`,
+      description: pl.description,
+      category: pl.category,
+      color: pl.color,
+      iconName: pl.iconName,
+    });
+    setActiveMenuId(null);
+  };
+
+  const handleDelete = (pl: Playlist) => {
+    setActiveMenuId(null);
+    if (
+      confirm(
+        `Are you sure you want to delete playlist "${pl.title}"?\n\nNOTE: The canonical video lessons in this playlist will NOT be deleted from your library.`
+      )
+    ) {
+      deletePlaylist(pl.id);
+    }
   };
 
   return (
@@ -109,7 +140,7 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
             onClick={onOpenAddModal}
             className="flex items-center gap-2 bg-[#FFE600] border-2 border-black px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[3]" />
             <span>Create Playlist</span>
           </button>
         </div>
@@ -138,17 +169,82 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
           return (
             <div
               key={pl.id}
-              className="bg-white border-3 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#000] transition-all flex flex-col justify-between"
+              className="bg-white border-3 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#000] transition-all flex flex-col justify-between relative"
             >
               <div>
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`w-12 h-12 ${bg} border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_#000]`}>
+                  <div
+                    className={`w-12 h-12 ${bg} border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_#000]`}
+                  >
                     <Icon className="w-6 h-6 text-black stroke-[2.5]" />
                   </div>
 
-                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-md border-2 border-black bg-[#F4F0EA]">
-                    {stats.percent}% COMPLETE
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-black px-2.5 py-0.5 rounded-md border-2 border-black bg-[#F4F0EA]">
+                      {stats.percent}% COMPLETE
+                    </span>
+
+                    {/* Three-dot menu requested by prompt */}
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuId(activeMenuId === pl.id ? null : pl.id);
+                        }}
+                        className="p-1 text-gray-500 hover:text-black rounded border border-transparent hover:border-black cursor-pointer"
+                        title="Playlist Actions"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      {activeMenuId === pl.id && (
+                        <div
+                          className="absolute right-0 top-7 w-48 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] py-1.5 z-30 font-sans text-xs font-bold"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => {
+                              setActiveMenuId(null);
+                              onSelectPlaylist(pl);
+                            }}
+                            className="w-full text-left px-3.5 py-2 hover:bg-[#FFE600] flex items-center gap-2 cursor-pointer"
+                          >
+                            <FolderClosed className="w-3.5 h-3.5" />
+                            <span>Open Playlist</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setActiveMenuId(null);
+                              onSelectPlaylist(pl);
+                            }}
+                            className="w-full text-left px-3.5 py-2 hover:bg-[#FFE600] flex items-center gap-2 cursor-pointer"
+                          >
+                            <FolderPlus className="w-3.5 h-3.5" />
+                            <span>Reorder Videos</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleDuplicatePlaylist(pl)}
+                            className="w-full text-left px-3.5 py-2 hover:bg-[#FFE600] flex items-center gap-2 cursor-pointer"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Duplicate Playlist</span>
+                          </button>
+
+                          <div className="border-t border-gray-200 my-1" />
+
+                          <button
+                            onClick={() => handleDelete(pl)}
+                            className="w-full text-left px-3.5 py-2 text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete Playlist</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <h3

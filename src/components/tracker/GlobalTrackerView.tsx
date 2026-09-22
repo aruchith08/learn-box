@@ -7,7 +7,9 @@ import {
   CheckCircle2,
   Clock,
   Filter,
-  Check
+  Check,
+  Film,
+  FolderClosed,
 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 
@@ -15,26 +17,49 @@ interface GlobalTrackerViewProps {
   onPlayVideo: (videoId: string) => void;
 }
 
+type TrackerFilterType =
+  | 'ALL'
+  | 'NOT_STARTED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'BOOKMARKED'
+  | 'PLAYLISTS'
+  | 'INDIVIDUAL_VIDEOS';
+
 export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVideo }) => {
-  const { allVideos, playlists, progress, markVideoComplete, toggleBookmark, isBookmarked, metrics } = useLearning();
+  const {
+    allVideos,
+    playlists,
+    progress,
+    markVideoComplete,
+    toggleBookmark,
+    isBookmarked,
+    metrics,
+  } = useLearning();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPlaylist, setSelectedPlaylist] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<'all' | 'completed' | 'in_progress' | 'unstarted'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<TrackerFilterType>('ALL');
 
   const filteredVideos = allVideos.filter((v) => {
-    // Playlist filter
-    if (selectedPlaylist !== 'all' && v.playlistId !== selectedPlaylist) {
-      if (selectedPlaylist === 'standalone' && v.playlistId) return false;
-      if (selectedPlaylist !== 'standalone') return false;
-    }
-
-    // Status filter
     const prog = progress[v.id];
-    const status = prog?.status || 'unstarted';
-    if (selectedStatus !== 'all' && status !== selectedStatus) return false;
+    const isDone =
+      prog?.status === 'completed' || (prog?.status as string) === 'COMPLETED';
+    const isInProg =
+      prog?.status === 'in_progress' || (prog?.status as string) === 'IN_PROGRESS';
+    const isUnstarted = !isDone && !isInProg;
+    const isBm = isBookmarked(v.id);
+    const isIndividual = !v.playlistId;
+    const isFromPlaylist = !!v.playlistId;
 
-    // Search query
+    // Filter type check
+    if (selectedFilter === 'NOT_STARTED' && !isUnstarted) return false;
+    if (selectedFilter === 'IN_PROGRESS' && !isInProg) return false;
+    if (selectedFilter === 'COMPLETED' && !isDone) return false;
+    if (selectedFilter === 'BOOKMARKED' && !isBm) return false;
+    if (selectedFilter === 'PLAYLISTS' && !isFromPlaylist) return false;
+    if (selectedFilter === 'INDIVIDUAL_VIDEOS' && !isIndividual) return false;
+
+    // Search query check
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchTitle = v.title.toLowerCase().includes(q);
@@ -46,6 +71,16 @@ export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVide
     return true;
   });
 
+  const filterButtons: { id: TrackerFilterType; label: string }[] = [
+    { id: 'ALL', label: 'ALL' },
+    { id: 'NOT_STARTED', label: 'NOT STARTED' },
+    { id: 'IN_PROGRESS', label: 'IN PROGRESS' },
+    { id: 'COMPLETED', label: 'COMPLETED' },
+    { id: 'BOOKMARKED', label: 'BOOKMARKED' },
+    { id: 'PLAYLISTS', label: 'PLAYLISTS' },
+    { id: 'INDIVIDUAL_VIDEOS', label: 'INDIVIDUAL VIDEOS' },
+  ];
+
   return (
     <div className="p-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Banner */}
@@ -54,91 +89,76 @@ export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVide
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="bg-[#A7F3D0] text-black text-[10px] font-black px-2 py-0.5 rounded border border-black uppercase">
-                CURRICULUM MATRIX
+                LEARNING MATRIX
               </span>
               <span className="text-xs font-bold text-gray-500">
-                {metrics.completedVideos} of {metrics.totalVideos} Videos Completed ({metrics.overallProgress}%)
+                {metrics.completedVideos} of {metrics.totalVideos} Completed ({metrics.overallProgress}%)
               </span>
             </div>
             <h1 className="text-2xl font-black text-black uppercase tracking-tight">
-              GLOBAL LEARNING TRACKER
+              CURRICULUM & VIDEO TRACKER
             </h1>
             <p className="text-xs font-bold text-gray-600 mt-1">
-              Unified progress matrix across all enrolled playlists and standalone tutorials.
+              Filter by status, origin, or bookmarking across your complete personal learning catalog.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="bg-[#FEF08A] border-2 border-black px-3.5 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] text-xs font-black">
-              ⚡ {filteredVideos.length} Videos Matching Filter
+              ⚡ {filteredVideos.length} Matching Lessons
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-[#F4F0EA] border-3 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000] mb-6 flex flex-wrap items-center justify-between gap-3">
+      {/* Filter Toolbar matching prompt specification */}
+      <div className="bg-[#F4F0EA] border-3 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000] mb-6 space-y-3">
         {/* Search */}
-        <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+        <div className="relative max-w-md">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 stroke-[2.5]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search all curriculum videos..."
-            className="w-full bg-white border-2 border-black rounded-lg pl-9 pr-3 py-1.5 text-xs font-bold shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#FFE600]"
+            placeholder="Search videos by title, topic, or playlist..."
+            className="w-full bg-white border-2 border-black rounded-lg pl-10 pr-4 py-2 text-xs font-bold shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#FFE600]"
           />
         </div>
 
-        {/* Playlist Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-black uppercase text-black hidden sm:inline">Playlist:</span>
-          <select
-            value={selectedPlaylist}
-            onChange={(e) => setSelectedPlaylist(e.target.value)}
-            className="bg-white border-2 border-black rounded-lg px-2.5 py-1.5 text-xs font-bold shadow-[2px_2px_0px_#000] focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Playlists ({playlists.length})</option>
-            {playlists.map((pl) => (
-              <option key={pl.id} value={pl.id}>
-                {pl.title}
-              </option>
-            ))}
-            <option value="standalone">Standalone Videos Only</option>
-          </select>
-        </div>
-
-        {/* Status Selector */}
-        <div className="flex items-center gap-1.5">
-          {(['all', 'unstarted', 'in_progress', 'completed'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setSelectedStatus(s)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase border-2 border-black transition-all cursor-pointer shadow-[1px_1px_0px_#000] ${
-                selectedStatus === s
-                  ? 'bg-black text-[#FFE600]'
-                  : 'bg-white text-black hover:bg-gray-100'
-              }`}
-            >
-              {s.replace('_', ' ')}
-            </button>
-          ))}
+        {/* Filters Row matching prompt: ALL, NOT STARTED, IN PROGRESS, COMPLETED, BOOKMARKED, PLAYLISTS, INDIVIDUAL VIDEOS */}
+        <div className="flex flex-wrap items-center gap-2">
+          {filterButtons.map((btn) => {
+            const isSelected = selectedFilter === btn.id;
+            return (
+              <button
+                key={btn.id}
+                onClick={() => setSelectedFilter(btn.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider border-2 border-black transition-all cursor-pointer shadow-[2px_2px_0px_#000] ${
+                  isSelected
+                    ? 'bg-black text-[#FFE600] translate-x-0.5'
+                    : 'bg-white text-black hover:bg-gray-100'
+                }`}
+              >
+                {btn.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Tracker Table */}
+      {/* Columns: TYPE, TITLE, PLAYLIST, STATUS, PROGRESS, LAST WATCHED, ACTIONS */}
       <div className="bg-white border-3 border-black rounded-xl overflow-hidden shadow-[5px_5px_0px_#000]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#121214] text-white border-b-3 border-black text-[11px] font-black uppercase tracking-wider">
-                <th className="p-3.5 text-center w-12">#</th>
-                <th className="p-3.5 text-center w-16">Status</th>
-                <th className="p-3.5">Video Title</th>
-                <th className="p-3.5">Curriculum / Category</th>
-                <th className="p-3.5">Topic</th>
-                <th className="p-3.5 text-center w-24">Duration</th>
-                <th className="p-3.5 text-right w-28">Actions</th>
+                <th className="p-3.5 text-center w-20">TYPE</th>
+                <th className="p-3.5">TITLE</th>
+                <th className="p-3.5">PLAYLIST</th>
+                <th className="p-3.5 text-center w-28">STATUS</th>
+                <th className="p-3.5 text-center w-28">PROGRESS</th>
+                <th className="p-3.5 text-center w-32">LAST WATCHED</th>
+                <th className="p-3.5 text-right w-36">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-black text-xs font-medium">
@@ -149,11 +169,21 @@ export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVide
                   </td>
                 </tr>
               ) : (
-                filteredVideos.slice(0, 150).map((v, idx) => {
+                filteredVideos.slice(0, 150).map((v) => {
                   const prog = progress[v.id];
-                  const isCompleted = prog?.status === 'completed';
-                  const isInProgress = prog?.status === 'in_progress';
+                  const isCompleted =
+                    prog?.status === 'completed' ||
+                    (prog?.status as string) === 'COMPLETED';
+                  const isInProgress =
+                    prog?.status === 'in_progress' ||
+                    (prog?.status as string) === 'IN_PROGRESS';
+                  const pct = isCompleted ? 100 : prog?.percent || prog?.progressPercentage || 0;
                   const bookmarked = isBookmarked(v.id);
+                  const isStandalone = !v.playlistId;
+
+                  const lastWatched = prog?.lastWatchedAt
+                    ? new Date(prog.lastWatchedAt).toLocaleDateString()
+                    : 'Never';
 
                   return (
                     <tr
@@ -162,27 +192,20 @@ export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVide
                         isCompleted ? 'bg-[#F0FDF4]/50' : ''
                       }`}
                     >
-                      {/* Number */}
-                      <td className="p-3 text-center font-mono font-bold text-gray-500">
-                        {idx + 1}
-                      </td>
-
-                      {/* Checkbox Complete */}
+                      {/* TYPE */}
                       <td className="p-3 text-center">
-                        <button
-                          onClick={() => markVideoComplete(v.id)}
-                          className={`w-6 h-6 rounded-md border-2 border-black flex items-center justify-center cursor-pointer transition-all shadow-[1px_1px_0px_#000] ${
-                            isCompleted
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-white hover:bg-emerald-100 text-transparent'
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 rounded border border-black ${
+                            isStandalone
+                              ? 'bg-[#FECDD3] text-black'
+                              : 'bg-[#DDD6FE] text-black'
                           }`}
-                          title="Toggle completion"
                         >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        </button>
+                          {isStandalone ? 'Video' : 'Course'}
+                        </span>
                       </td>
 
-                      {/* Title */}
+                      {/* TITLE */}
                       <td className="p-3">
                         <div
                           onClick={() => onPlayVideo(v.id)}
@@ -192,44 +215,92 @@ export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVide
                         >
                           {v.title}
                         </div>
+                        {v.topic && (
+                          <div className="text-[10px] font-bold text-gray-400 truncate">
+                            Topic: {v.topic}
+                          </div>
+                        )}
                       </td>
 
-                      {/* Curriculum */}
-                      <td className="p-3">
-                        <span className="bg-[#DDD6FE] text-purple-900 border border-black px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block">
-                          {v.playlistTitle ? v.playlistTitle.slice(0, 24) + '...' : v.category || 'Standalone'}
+                      {/* PLAYLIST */}
+                      <td className="p-3 font-bold text-gray-700">
+                        {v.playlistTitle ? (
+                          <span className="truncate block max-w-xs">
+                            {v.playlistTitle}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic">Standalone</span>
+                        )}
+                      </td>
+
+                      {/* STATUS */}
+                      <td className="p-3 text-center">
+                        <span
+                          className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border border-black inline-block shadow-[1px_1px_0px_#000] ${
+                            isCompleted
+                              ? 'bg-[#A7F3D0] text-black'
+                              : isInProgress
+                              ? 'bg-[#FECDD3] text-black'
+                              : 'bg-white text-gray-700'
+                          }`}
+                        >
+                          {isCompleted
+                            ? 'COMPLETED'
+                            : isInProgress
+                            ? 'IN PROGRESS'
+                            : 'NOT STARTED'}
                         </span>
                       </td>
 
-                      {/* Topic */}
-                      <td className="p-3 text-gray-700 font-bold">
-                        {v.topic || '—'}
+                      {/* PROGRESS */}
+                      <td className="p-3 text-center">
+                        <div className="flex items-center gap-2 justify-center">
+                          <div className="w-16 bg-[#E5E5E5] border border-black rounded-full h-2 overflow-hidden">
+                            <div
+                              className="bg-black h-full rounded-full"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="font-mono font-black text-[10px]">
+                            {pct}%
+                          </span>
+                        </div>
                       </td>
 
-                      {/* Duration */}
-                      <td className="p-3 text-center font-mono text-gray-600 font-bold text-[11px]">
-                        {v.duration || '—'}
+                      {/* LAST WATCHED */}
+                      <td className="p-3 text-center font-mono text-[11px] text-gray-600">
+                        {lastWatched}
                       </td>
 
-                      {/* Action buttons */}
+                      {/* ACTIONS */}
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
-                            onClick={() => toggleBookmark(v.id)}
-                            className={`p-1.5 border border-black rounded shadow-[1px_1px_0px_#000] cursor-pointer ${
-                              bookmarked ? 'bg-[#FEF08A]' : 'bg-white hover:bg-gray-100'
-                            }`}
-                            title="Bookmark"
+                            onClick={() => onPlayVideo(v.id)}
+                            className="p-1.5 bg-[#FFE600] border-2 border-black rounded shadow-[1px_1px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
+                            title="Play Video"
                           >
-                            <Bookmark className={`w-3 h-3 ${bookmarked ? 'fill-black' : ''}`} />
+                            <Play className="w-3.5 h-3.5 fill-black" />
                           </button>
 
                           <button
-                            onClick={() => onPlayVideo(v.id)}
-                            className="bg-[#FFE600] border border-black px-2.5 py-1 rounded text-[10px] font-black uppercase text-black hover:bg-[#FFD000] shadow-[1px_1px_0px_#000] cursor-pointer flex items-center gap-1"
+                            onClick={() => markVideoComplete(v.id)}
+                            className={`p-1.5 border-2 border-black rounded shadow-[1px_1px_0px_#000] cursor-pointer ${
+                              isCompleted ? 'bg-emerald-500 text-white' : 'bg-white hover:bg-emerald-50'
+                            }`}
+                            title="Toggle Complete"
                           >
-                            <Play className="w-2.5 h-2.5 fill-black" />
-                            <span>Play</span>
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => toggleBookmark(v.id)}
+                            className={`p-1.5 border-2 border-black rounded shadow-[1px_1px_0px_#000] cursor-pointer ${
+                              bookmarked ? 'bg-[#FEF08A]' : 'bg-white hover:bg-yellow-50'
+                            }`}
+                            title="Bookmark"
+                          >
+                            <Bookmark className={`w-3.5 h-3.5 ${bookmarked ? 'fill-black' : ''}`} />
                           </button>
                         </div>
                       </td>

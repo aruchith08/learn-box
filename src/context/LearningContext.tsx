@@ -2,13 +2,16 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import {
   Playlist,
   Video,
+  PlaylistVideo,
   UserVideoProgress,
   Note,
   Bookmark,
   ActivityItem,
   UserSettings,
+  TabType,
 } from '../types/focusLearn';
-import { storageService } from '../services/storageService';
+import { dbService, UserDatabaseState } from '../services/dbService';
+import { useAuth } from './AuthContext';
 import { formatTime } from '../services/youtubeParser';
 
 export interface Metrics {
@@ -25,8 +28,8 @@ export interface Metrics {
 
 interface LearningContextType {
   // Navigation & View state
-  activeTab: string;
-  setActiveTab: (tab: any) => void;
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
   activePlaylistId: string | null;
   setActivePlaylistId: (id: string | null) => void;
   activeVideoId: string | null;
@@ -39,6 +42,7 @@ interface LearningContextType {
   playlists: Playlist[];
   videos: Video[];
   allVideos: Video[];
+  playlistVideos: PlaylistVideo[];
   progress: Record<string, UserVideoProgress>;
   notes: Note[];
   bookmarks: Bookmark[];
@@ -60,13 +64,15 @@ interface LearningContextType {
     title: string;
     topic?: string;
     category?: string;
-    duration?: string;
+    duration?: string | number;
     playlistId?: string;
   }) => Video;
   addPlaylist: (data: {
     title: string;
     category?: string;
     description?: string;
+    color?: string;
+    iconName?: any;
   }) => Playlist;
   importPlaylistFromCSV: (
     title: string,
@@ -78,6 +84,7 @@ interface LearningContextType {
       duration?: string;
     }>
   ) => Playlist;
+  reorderPlaylistVideos: (playlistId: string, orderedVideoIds: string[]) => void;
   deleteVideo: (videoId: string) => void;
   deletePlaylist: (playlistId: string) => void;
   addNote: (data: {
@@ -92,85 +99,98 @@ interface LearningContextType {
   isBookmarked: (videoId: string) => boolean;
   updateSettings: (newSettings: Partial<UserSettings>) => void;
   resetToDefaults: () => void;
+  findCanonicalVideo: (youtubeId: string) => Video | undefined;
 }
 
 const LearningContext = createContext<LearningContextType | undefined>(undefined);
 
 export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize storage once on mount
-  useEffect(() => {
-    storageService.initialize();
-  }, []);
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.uid || 'guest';
 
-  // State
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  // Navigation & View state
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState<boolean>(false);
 
-  // Storage synced state
-  const [rawPlaylists, setRawPlaylists] = useState<Playlist[]>(() => storageService.getPlaylists());
-  const [rawVideos, setRawVideos] = useState<Video[]>(() => storageService.getVideos());
-  const [progress, setProgress] = useState<Record<string, UserVideoProgress>>(() => storageService.getProgress());
-  const [notes, setNotes] = useState<Note[]>(() => storageService.getNotes());
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => storageService.getBookmarks());
-  const [activity, setActivity] = useState<ActivityItem[]>(() => storageService.getActivity());
-  const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
+  // Database State
+  const [dbState, setDbState] = useState<UserDatabaseState>(() =>
+    dbService.createInitialState(currentUserId)
+  );
 
-  // Auto-sync with localStorage
+  // Load user data when current user changes (and handle guest migration)
   useEffect(() => {
-    storageService.savePlaylists(rawPlaylists);
-  }, [rawPlaylists]);
+    let isMounted = true;
 
-  useEffect(() => {
-    storageService.saveVideos(rawVideos);
-  }, [rawVideos]);
+    async function initUser() {
+      if (currentUserId && currentUserId !== 'guest') {
+        // User just signed in - migrate any guest progress
+        const migrated = await dbService.migrateGuestData(currentUserId);
+        if (isMounted) setDbState(migrated);
+      } else {
+        const loaded = await dbService.loadUserData('guest');
+        if (isMounted) setDbState(loaded);
+      }
+    }
 
-  useEffect(() => {
-    storageService.saveProgress(progress);
-  }, [progress]);
+    initUser();
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUserId]);
 
-  useEffect(() => {
-    storageService.saveNotes(notes);
-  }, [notes]);
+  // Persist on database state change
+  const persistState = useCallback(
+    (newState: UserDatabaseState) => {
+      setDbState(newState);
+      dbService.saveLocalUserData(currentUserId, newState);
+    },
+    [currentUserId]
+  );
 
-  useEffect(() => {
-    storageService.saveBookmarks(bookmarks);
-  }, [bookmarks]);
-
-  useEffect(() => {
-    storageService.saveActivity(activity);
-  }, [activity]);
-
-  useEffect(() => {
-    storageService.saveSettings(settings);
-  }, [settings]);
-
-  // Aggregate all videos with normalized properties
+  // Canonical videos enriched with metadata
   const allVideos: Video[] = useMemo(() => {
-    return rawVideos.map((v) => {
-      const pl = rawPlaylists.find((p) => p.id === v.playlistId);
-      const thumbnail = v.thumbnailUrl || (v as any).thumbnail || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`;
-      const dur = (v as any).durationFormatted || (typeof v.duration === 'string' ? v.duration : formatTime(typeof v.duration === 'number' ? v.duration : 1800));
+    return dbState.videos.map((v) => {
+      const pv = dbState.playlistVideos.find((p) => p.videoId === v.id);
+      const pl = pv ? dbState.playlists.find((p) => p.id === pv.playlistId) : null;
+      const thumbnail =
+        v.thumbnailUrl ||
+        v.thumbnail ||
+        `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`;
+      const dur =
+        v.durationFormatted ||
+        (typeof v.duration === 'string'
+          ? v.duration
+          : formatTime(typeof v.duration === 'number' ? v.duration : 1800));
 
       return {
         ...v,
         thumbnailUrl: thumbnail,
         thumbnail: thumbnail,
         duration: dur,
+        durationFormatted: dur,
+        playlistId: pl?.id || v.playlistId || null,
         playlistTitle: pl?.title,
         category: pl?.title || v.category || 'Standalone Video',
       };
     });
-  }, [rawVideos, rawPlaylists]);
+  }, [dbState.videos, dbState.playlistVideos, dbState.playlists]);
 
-  // Enriched playlists: every playlist is GUARANTEED to have a non-null `videos: Video[]` array
+  // Enriched playlists with dynamic calculation of completion and videos
   const playlists: Playlist[] = useMemo(() => {
-    return rawPlaylists.map((pl) => {
-      const plVideos = allVideos.filter((v) => v.playlistId === pl.id);
+    return dbState.playlists.map((pl) => {
+      const pvs = dbState.playlistVideos
+        .filter((pv) => pv.playlistId === pl.id)
+        .sort((a, b) => a.position - b.position);
+
+      const plVideos: Video[] = pvs
+        .map((pv) => allVideos.find((v) => v.id === pv.videoId))
+        .filter((v): v is Video => !!v);
+
       const total = plVideos.length;
       const completed = plVideos.filter((v) => {
-        const p = progress[v.id];
+        const p = dbState.progress[v.id];
         return p?.status === 'completed' || (p?.status as string) === 'COMPLETED';
       }).length;
       const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -183,16 +203,16 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         progressPercentage: pct,
       };
     });
-  }, [rawPlaylists, allVideos, progress]);
+  }, [dbState.playlists, dbState.playlistVideos, allVideos, dbState.progress]);
 
-  // Dynamic Metrics
+  // Dynamic real metrics
   const metrics: Metrics = useMemo(() => {
     const total = allVideos.length;
     let completed = 0;
     let inProgress = 0;
 
     allVideos.forEach((v) => {
-      const p = progress[v.id];
+      const p = dbState.progress[v.id];
       const status = p?.status as string;
       if (status === 'completed' || status === 'COMPLETED') {
         completed++;
@@ -211,33 +231,32 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       unstartedVideos: unstarted,
       overallProgress,
       totalPlaylists: playlists.length,
-      totalBookmarks: bookmarks.length,
-      totalNotes: notes.length,
-      totalWatchHours: Math.round(((completed * 35 + inProgress * 15) / 60) * 10) / 10,
+      totalBookmarks: dbState.bookmarks.length,
+      totalNotes: dbState.notes.length,
+      totalWatchHours:
+        Math.round(((completed * 35 + inProgress * 15) / 60) * 10) / 10,
     };
-  }, [allVideos, progress, playlists, bookmarks, notes]);
+  }, [allVideos, dbState.progress, playlists, dbState.bookmarks, dbState.notes]);
 
-  // Continue Watching Video
+  // Continue Watching: prioritize in-progress video with latest watch time, null if none started
   const continueWatchingVideo: Video | null = useMemo(() => {
-    // 1. In-progress video with most recent activity
-    const inProgressVideos = allVideos.filter((v) => {
-      const s = progress[v.id]?.status as string;
-      return s === 'in_progress' || s === 'IN_PROGRESS';
-    });
-    if (inProgressVideos.length > 0) {
-      return inProgressVideos[0];
+    const inProgressList = allVideos
+      .filter((v) => {
+        const p = dbState.progress[v.id];
+        return p?.status === 'in_progress' || (p?.status as string) === 'IN_PROGRESS';
+      })
+      .sort((a, b) => {
+        const timeA = new Date(dbState.progress[a.id]?.lastWatchedAt || 0).getTime();
+        const timeB = new Date(dbState.progress[b.id]?.lastWatchedAt || 0).getTime();
+        return timeB - timeA;
+      });
+
+    if (inProgressList.length > 0) {
+      return inProgressList[0];
     }
 
-    // 2. Uncompleted video
-    const uncompleted = allVideos.find((v) => {
-      const s = progress[v.id]?.status as string;
-      return s !== 'completed' && s !== 'COMPLETED';
-    });
-    if (uncompleted) return uncompleted;
-
-    // 3. Fallback
-    return allVideos[0] || null;
-  }, [allVideos, progress]);
+    return null;
+  }, [allVideos, dbState.progress]);
 
   // Actions
   const playVideo = useCallback((videoId: string, playlistId?: string | null) => {
@@ -253,65 +272,124 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateVideoProgress = useCallback(
     (videoId: string, currentTime: number, duration = 1800) => {
-      const percent = duration > 0 ? Math.min(100, Math.round((currentTime / duration) * 100)) : 0;
-      const isComplete = percent >= 90;
+      setDbState((prev) => {
+        const percent = duration > 0 ? Math.min(100, Math.round((currentTime / duration) * 100)) : 0;
+        const threshold = prev.settings.markCompleteThreshold || 90;
+        const existing = prev.progress[videoId];
+        const isPreviouslyCompleted = existing?.status === 'completed' || existing?.status === 'COMPLETED';
+        const isNowComplete = isPreviouslyCompleted || percent >= threshold;
 
-      setProgress((prev) => ({
-        ...prev,
-        [videoId]: {
-          videoId,
-          status: isComplete ? 'completed' : percent > 1 ? 'in_progress' : 'unstarted',
-          currentTime,
-          duration,
-          percent,
-          lastWatchedAt: new Date().toISOString(),
-        },
-      }));
+        const newStatus = isNowComplete
+          ? 'completed'
+          : percent > 1
+          ? 'in_progress'
+          : 'unstarted';
+
+        const updatedProgress = {
+          ...prev.progress,
+          [videoId]: {
+            videoId,
+            status: newStatus as any,
+            progressPercentage: isNowComplete ? 100 : percent,
+            percent: isNowComplete ? 100 : percent,
+            currentTime,
+            duration,
+            lastWatchedAt: new Date().toISOString(),
+            completedAt: isNowComplete ? existing?.completedAt || new Date().toISOString() : undefined,
+            sessionsCount: (existing?.sessionsCount || 0) + 1,
+          },
+        };
+
+        const targetVideo = prev.videos.find((v) => v.id === videoId);
+        let newActivity = prev.activity;
+
+        // If newly reached completion, log activity
+        if (!isPreviouslyCompleted && isNowComplete && targetVideo) {
+          newActivity = [
+            {
+              id: 'act-' + Date.now(),
+              type: 'completed_video',
+              title: `Completed "${targetVideo.title}"`,
+              details: targetVideo.category || 'Curriculum',
+              timestamp: new Date().toISOString(),
+              videoId,
+            },
+            ...prev.activity,
+          ].slice(0, 60);
+        }
+
+        const nextState = {
+          ...prev,
+          progress: updatedProgress,
+          activity: newActivity,
+        };
+
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
     },
-    []
+    [currentUserId]
   );
 
   const markVideoComplete = useCallback(
     (videoId: string) => {
-      setProgress((prev) => {
-        const existing = prev[videoId];
-        const status = existing?.status as string;
-        const nextComplete = status !== 'completed' && status !== 'COMPLETED';
+      setDbState((prev) => {
+        const existing = prev.progress[videoId];
+        const isDone = existing?.status === 'completed' || existing?.status === 'COMPLETED';
+        const nextDone = !isDone;
+        const targetVideo = prev.videos.find((v) => v.id === videoId);
 
-        const video = allVideos.find((v) => v.id === videoId);
+        const updatedProgress = {
+          ...prev.progress,
+          [videoId]: {
+            videoId,
+            status: (nextDone ? 'completed' : 'unstarted') as any,
+            progressPercentage: nextDone ? 100 : 0,
+            percent: nextDone ? 100 : 0,
+            currentTime: nextDone ? existing?.duration || 1800 : 0,
+            duration: existing?.duration || 1800,
+            lastWatchedAt: new Date().toISOString(),
+            completedAt: nextDone ? new Date().toISOString() : undefined,
+            sessionsCount: (existing?.sessionsCount || 0) + 1,
+          },
+        };
 
-        // Add activity
-        if (nextComplete && video) {
-          setActivity((act) => [
+        let newActivity = prev.activity;
+        if (nextDone && targetVideo) {
+          newActivity = [
             {
               id: 'act-' + Date.now(),
               type: 'completed_video',
-              title: `Completed "${video.title}"`,
-              details: video.playlistTitle || video.category || 'Curriculum',
+              title: `Completed "${targetVideo.title}"`,
+              details: targetVideo.category || 'Curriculum',
               timestamp: new Date().toISOString(),
               videoId,
             },
-            ...act,
-          ]);
+            ...prev.activity,
+          ].slice(0, 60);
         }
 
-        return {
+        const nextState = {
           ...prev,
-          [videoId]: {
-            videoId,
-            status: nextComplete ? 'completed' : 'unstarted',
-            currentTime: nextComplete ? (existing?.duration || 1800) : 0,
-            duration: existing?.duration || 1800,
-            percent: nextComplete ? 100 : 0,
-            lastWatchedAt: new Date().toISOString(),
-          },
+          progress: updatedProgress,
+          activity: newActivity,
         };
+
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
       });
     },
-    [allVideos]
+    [currentUserId]
   );
 
   const toggleVideoComplete = markVideoComplete;
+
+  const findCanonicalVideo = useCallback(
+    (youtubeId: string): Video | undefined => {
+      return dbService.findCanonicalVideo(dbState.videos, youtubeId);
+    },
+    [dbState.videos]
+  );
 
   const addVideo = useCallback(
     (data: {
@@ -319,70 +397,125 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       title: string;
       topic?: string;
       category?: string;
-      duration?: string;
+      duration?: string | number;
       playlistId?: string;
     }) => {
-      const newId = 'vid-' + Date.now();
-      const newVideo: Video = {
-        id: newId,
-        youtubeId: data.youtubeId,
-        title: data.title,
-        topic: data.topic,
-        category: data.category || 'Standalone Video',
-        duration: data.duration || '25:00',
-        thumbnailUrl: `https://img.youtube.com/vi/${data.youtubeId}/hqdefault.jpg`,
-        playlistId: data.playlistId,
-        createdAt: new Date().toISOString(),
-      };
+      let resultVideo: Video;
 
-      setRawVideos((prev) => [newVideo, ...prev]);
+      setDbState((prev) => {
+        // 1. Check if canonical video already exists
+        let canonical = dbService.findCanonicalVideo(prev.videos, data.youtubeId);
+        let updatedVideos = [...prev.videos];
 
-      setActivity((act) => [
-        {
+        if (!canonical) {
+          canonical = {
+            id: 'vid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+            youtubeId: data.youtubeId,
+            title: data.title,
+            topic: data.topic,
+            category: data.category || 'Standalone Video',
+            duration: typeof data.duration === 'string' ? data.duration : formatTime(data.duration || 1800),
+            durationFormatted: typeof data.duration === 'string' ? data.duration : formatTime(data.duration || 1800),
+            thumbnailUrl: `https://img.youtube.com/vi/${data.youtubeId}/hqdefault.jpg`,
+            thumbnail: `https://img.youtube.com/vi/${data.youtubeId}/hqdefault.jpg`,
+            createdAt: new Date().toISOString(),
+          };
+          updatedVideos = [canonical, ...updatedVideos];
+        }
+
+        resultVideo = canonical;
+
+        // 2. If playlistId provided, associate in playlist_videos
+        let updatedPlaylistVideos = [...prev.playlistVideos];
+        if (data.playlistId) {
+          const alreadyLinked = updatedPlaylistVideos.some(
+            (pv) => pv.playlistId === data.playlistId && pv.videoId === canonical!.id
+          );
+          if (!alreadyLinked) {
+            const currentCount = updatedPlaylistVideos.filter((pv) => pv.playlistId === data.playlistId).length;
+            updatedPlaylistVideos.push({
+              id: `pv-${data.playlistId}-${canonical.id}`,
+              playlistId: data.playlistId,
+              videoId: canonical.id,
+              position: currentCount,
+              createdAt: new Date().toISOString(),
+            });
+          }
+        }
+
+        // 3. Log activity
+        const newActivity: ActivityItem = {
           id: 'act-' + Date.now(),
-          type: 'watched_video',
-          title: `Added "${newVideo.title}"`,
-          details: data.playlistId ? 'Added to playlist' : 'Added to My Videos',
+          type: 'added',
+          title: `Added "${canonical.title}"`,
+          details: data.playlistId ? 'Linked to Playlist' : 'Added to My Videos',
           timestamp: new Date().toISOString(),
-          videoId: newId,
-        },
-        ...act,
-      ]);
+          videoId: canonical.id,
+        };
 
-      return newVideo;
+        const nextState = {
+          ...prev,
+          videos: updatedVideos,
+          playlistVideos: updatedPlaylistVideos,
+          activity: [newActivity, ...prev.activity].slice(0, 60),
+        };
+
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+
+      return resultVideo!;
     },
-    []
+    [currentUserId]
   );
 
   const addPlaylist = useCallback(
-    (data: { title: string; category?: string; description?: string }) => {
-      const newId = 'pl-' + Date.now();
+    (data: {
+      title: string;
+      category?: string;
+      description?: string;
+      color?: string;
+      iconName?: any;
+    }) => {
+      const plId = 'pl-' + Date.now();
       const newPlaylist: Playlist = {
-        id: newId,
+        id: plId,
         title: data.title,
+        creator: 'You',
         category: data.category || 'Course',
-        description: data.description,
+        description: data.description || '',
+        color: data.color || '#FEF08A',
+        iconName: data.iconName || 'folder',
         videos: [],
+        totalVideos: 0,
+        completedVideos: 0,
+        progressPercentage: 0,
         createdAt: new Date().toISOString(),
       };
 
-      setRawPlaylists((prev) => [newPlaylist, ...prev]);
-
-      setActivity((act) => [
-        {
-          id: 'act-' + Date.now(),
-          type: 'watched_video',
-          title: `Created playlist "${data.title}"`,
-          details: data.category || 'Course',
-          timestamp: new Date().toISOString(),
-          playlistId: newId,
-        },
-        ...act,
-      ]);
+      setDbState((prev) => {
+        const nextState = {
+          ...prev,
+          playlists: [newPlaylist, ...prev.playlists],
+          activity: [
+            {
+              id: 'act-' + Date.now(),
+              type: 'added' as const,
+              title: `Created playlist "${data.title}"`,
+              details: data.category || 'Course',
+              timestamp: new Date().toISOString(),
+              playlistId: plId,
+            },
+            ...prev.activity,
+          ].slice(0, 60),
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
 
       return newPlaylist;
     },
-    []
+    [currentUserId]
   );
 
   const importPlaylistFromCSV = useCallback(
@@ -397,64 +530,143 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }>
     ) => {
       const plId = 'pl-' + Date.now();
-      const courseVideos: Video[] = importedVideos.map((v, i) => ({
-        id: `${plId}-v${i + 1}`,
-        youtubeId: v.youtubeId,
-        title: v.title,
-        topic: v.topic,
-        category: v.category || title,
-        duration: v.duration || '20:00',
-        thumbnailUrl: `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`,
-        playlistId: plId,
-        playlistTitle: title,
-        createdAt: new Date().toISOString(),
-      }));
+      let createdPlaylist: Playlist;
 
-      const newPlaylist: Playlist = {
-        id: plId,
-        title,
-        category: 'Imported Course',
-        description: `Imported with ${courseVideos.length} videos.`,
-        videos: courseVideos,
-        createdAt: new Date().toISOString(),
-      };
+      setDbState((prev) => {
+        const updatedVideos = [...prev.videos];
+        const newPlaylistVideos: PlaylistVideo[] = [];
 
-      setRawPlaylists((prev) => [newPlaylist, ...prev]);
-      setRawVideos((prev) => [...courseVideos, ...prev]);
+        importedVideos.forEach((v, index) => {
+          let canonical = dbService.findCanonicalVideo(updatedVideos, v.youtubeId);
+          if (!canonical) {
+            canonical = {
+              id: `${plId}-v${index + 1}`,
+              youtubeId: v.youtubeId,
+              title: v.title,
+              topic: v.topic,
+              category: v.category || title,
+              duration: v.duration || '20:00',
+              durationFormatted: v.duration || '20:00',
+              thumbnailUrl: `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`,
+              thumbnail: `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`,
+              createdAt: new Date().toISOString(),
+            };
+            updatedVideos.push(canonical);
+          }
 
-      setActivity((act) => [
-        {
-          id: 'act-' + Date.now(),
-          type: 'watched_video',
-          title: `Imported playlist "${title}"`,
-          details: `${courseVideos.length} videos from CSV`,
-          timestamp: new Date().toISOString(),
-          playlistId: plId,
-        },
-        ...act,
-      ]);
+          newPlaylistVideos.push({
+            id: `pv-${plId}-${canonical.id}`,
+            playlistId: plId,
+            videoId: canonical.id,
+            position: index,
+            createdAt: new Date().toISOString(),
+          });
+        });
 
-      return newPlaylist;
+        createdPlaylist = {
+          id: plId,
+          title,
+          creator: 'Imported',
+          category: 'Course',
+          description: `Imported with ${importedVideos.length} lessons.`,
+          color: '#A7F3D0',
+          iconName: 'folder',
+          createdAt: new Date().toISOString(),
+        };
+
+        const nextState = {
+          ...prev,
+          playlists: [createdPlaylist, ...prev.playlists],
+          videos: updatedVideos,
+          playlistVideos: [...prev.playlistVideos, ...newPlaylistVideos],
+          activity: [
+            {
+              id: 'act-' + Date.now(),
+              type: 'added' as const,
+              title: `Imported playlist "${title}"`,
+              details: `${importedVideos.length} videos from CSV`,
+              timestamp: new Date().toISOString(),
+              playlistId: plId,
+            },
+            ...prev.activity,
+          ].slice(0, 60),
+        };
+
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+
+      return createdPlaylist!;
     },
-    []
+    [currentUserId]
   );
 
-  const deleteVideo = useCallback((videoId: string) => {
-    setRawVideos((prev) => prev.filter((v) => v.id !== videoId));
-    setProgress((prev) => {
-      const next = { ...prev };
-      delete next[videoId];
-      return next;
-    });
-    setBookmarks((prev) => prev.filter((b) => b.videoId !== videoId));
-    setNotes((prev) => prev.filter((n) => n.videoId !== videoId));
-  }, []);
+  const reorderPlaylistVideos = useCallback(
+    (playlistId: string, orderedVideoIds: string[]) => {
+      setDbState((prev) => {
+        const otherPvs = prev.playlistVideos.filter((pv) => pv.playlistId !== playlistId);
+        const reorderedPvs: PlaylistVideo[] = orderedVideoIds.map((vid, idx) => ({
+          id: `pv-${playlistId}-${vid}`,
+          playlistId,
+          videoId: vid,
+          position: idx,
+          createdAt: new Date().toISOString(),
+        }));
 
-  const deletePlaylist = useCallback((playlistId: string) => {
-    setRawPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
-    setRawVideos((prev) => prev.filter((v) => v.playlistId !== playlistId));
-    setBookmarks((prev) => prev.filter((b) => b.playlistId !== playlistId));
-  }, []);
+        const nextState = {
+          ...prev,
+          playlistVideos: [...otherPvs, ...reorderedPvs],
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const deleteVideo = useCallback(
+    (videoId: string) => {
+      setDbState((prev) => {
+        const updatedVideos = prev.videos.filter((v) => v.id !== videoId);
+        const updatedPlaylistVideos = prev.playlistVideos.filter((pv) => pv.videoId !== videoId);
+        const nextProgress = { ...prev.progress };
+        delete nextProgress[videoId];
+        const nextBookmarks = prev.bookmarks.filter((b) => b.videoId !== videoId);
+        const nextNotes = prev.notes.filter((n) => n.videoId !== videoId);
+
+        const nextState = {
+          ...prev,
+          videos: updatedVideos,
+          playlistVideos: updatedPlaylistVideos,
+          progress: nextProgress,
+          bookmarks: nextBookmarks,
+          notes: nextNotes,
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const deletePlaylist = useCallback(
+    (playlistId: string) => {
+      setDbState((prev) => {
+        // Preserves canonical videos! Only removes playlist and its playlist_videos join records
+        const updatedPlaylists = prev.playlists.filter((p) => p.id !== playlistId);
+        const updatedPlaylistVideos = prev.playlistVideos.filter((pv) => pv.playlistId !== playlistId);
+
+        const nextState = {
+          ...prev,
+          playlists: updatedPlaylists,
+          playlistVideos: updatedPlaylistVideos,
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
 
   const addNote = useCallback(
     (data: {
@@ -474,36 +686,57 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         createdAt: new Date().toISOString(),
       };
 
-      setNotes((prev) => [newNote, ...prev]);
-
-      setActivity((act) => [
-        {
-          id: 'act-' + Date.now(),
-          type: 'added_note',
-          title: `Note: "${data.content.slice(0, 30)}..."`,
-          details: `${data.videoTitle} (@ ${newNote.timestampFormatted})`,
-          timestamp: new Date().toISOString(),
-          videoId: data.videoId,
-        },
-        ...act,
-      ]);
+      setDbState((prev) => {
+        const nextState = {
+          ...prev,
+          notes: [newNote, ...prev.notes],
+          activity: [
+            {
+              id: 'act-' + Date.now(),
+              type: 'added_note' as const,
+              title: `Note on "${data.videoTitle}"`,
+              details: `@ ${newNote.timestampFormatted}: "${data.content.slice(0, 30)}..."`,
+              timestamp: new Date().toISOString(),
+              videoId: data.videoId,
+            },
+            ...prev.activity,
+          ].slice(0, 60),
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
     },
-    []
+    [currentUserId]
   );
 
-  const deleteNote = useCallback((noteId: string) => {
-    setNotes((prev) => prev.filter((n) => n.id !== noteId));
-  }, []);
+  const deleteNote = useCallback(
+    (noteId: string) => {
+      setDbState((prev) => {
+        const nextState = {
+          ...prev,
+          notes: prev.notes.filter((n) => n.id !== noteId),
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
 
   const toggleBookmark = useCallback(
     (videoId: string) => {
-      setBookmarks((prev) => {
-        const existing = prev.find((b) => b.videoId === videoId);
+      setDbState((prev) => {
+        const existing = prev.bookmarks.find((b) => b.videoId === videoId);
         if (existing) {
-          return prev.filter((b) => b.videoId !== videoId);
+          const nextState = {
+            ...prev,
+            bookmarks: prev.bookmarks.filter((b) => b.videoId !== videoId),
+          };
+          dbService.saveLocalUserData(currentUserId, nextState);
+          return nextState;
         }
 
-        const video = allVideos.find((v) => v.id === videoId);
+        const video = prev.videos.find((v) => v.id === videoId);
         const newBm: Bookmark = {
           id: 'bm-' + Date.now(),
           videoId,
@@ -511,45 +744,53 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           createdAt: new Date().toISOString(),
         };
 
-        setActivity((act) => [
-          {
-            id: 'act-' + Date.now(),
-            type: 'bookmarked',
-            title: `Bookmarked "${video?.title || 'Video'}"`,
-            details: video?.playlistTitle || 'Video',
-            timestamp: new Date().toISOString(),
-            videoId,
-          },
-          ...act,
-        ]);
-
-        return [newBm, ...prev];
+        const nextState = {
+          ...prev,
+          bookmarks: [newBm, ...prev.bookmarks],
+          activity: [
+            {
+              id: 'act-' + Date.now(),
+              type: 'bookmarked' as const,
+              title: `Bookmarked "${video?.title || 'Video'}"`,
+              details: 'Saved for quick revision',
+              timestamp: new Date().toISOString(),
+              videoId,
+            },
+            ...prev.activity,
+          ].slice(0, 60),
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
       });
     },
-    [allVideos]
+    [currentUserId]
   );
 
   const isBookmarked = useCallback(
     (videoId: string) => {
-      return bookmarks.some((b) => b.videoId === videoId);
+      return dbState.bookmarks.some((b) => b.videoId === videoId);
     },
-    [bookmarks]
+    [dbState.bookmarks]
   );
 
-  const updateSettings = useCallback((newSettings: Partial<UserSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
-  }, []);
+  const updateSettings = useCallback(
+    (newSettings: Partial<UserSettings>) => {
+      setDbState((prev) => {
+        const nextState = {
+          ...prev,
+          settings: { ...prev.settings, ...newSettings },
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
 
   const resetToDefaults = useCallback(() => {
-    storageService.resetToDefaults();
-    setRawPlaylists(storageService.getPlaylists());
-    setRawVideos(storageService.getVideos());
-    setProgress(storageService.getProgress());
-    setNotes(storageService.getNotes());
-    setBookmarks(storageService.getBookmarks());
-    setActivity(storageService.getActivity());
-    setSettings(storageService.getSettings());
-  }, []);
+    const initialState = dbService.createInitialState(currentUserId);
+    setDbState(initialState);
+  }, [currentUserId]);
 
   return (
     <LearningContext.Provider
@@ -565,14 +806,15 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         toggleFocusMode,
 
         playlists,
-        videos: rawVideos,
+        videos: dbState.videos,
         allVideos,
-        progress,
-        notes,
-        bookmarks,
-        activity,
-        activities: activity,
-        settings,
+        playlistVideos: dbState.playlistVideos,
+        progress: dbState.progress,
+        notes: dbState.notes,
+        bookmarks: dbState.bookmarks,
+        activity: dbState.activity,
+        activities: dbState.activity,
+        settings: dbState.settings,
 
         metrics,
         continueWatchingVideo,
@@ -584,6 +826,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addVideo,
         addPlaylist,
         importPlaylistFromCSV,
+        reorderPlaylistVideos,
         deleteVideo,
         deletePlaylist,
         addNote,
@@ -592,6 +835,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         isBookmarked,
         updateSettings,
         resetToDefaults,
+        findCanonicalVideo,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Minimize2,
   ChevronLeft,
@@ -7,10 +7,11 @@ import {
   Bookmark,
   FileText,
   X,
-  Clock
+  Clock,
 } from '../common/focusIcons';
 import { Video } from '../../types/focusLearn';
 import { useLearning } from '../../context/LearningContext';
+import { YouTubeIframePlayer, YouTubePlayerRef } from './YouTubeIframePlayer';
 
 interface FocusModePlayerProps {
   video: Video;
@@ -27,13 +28,27 @@ export const FocusModePlayer: React.FC<FocusModePlayerProps> = ({
   onNextVideo,
   onPrevVideo,
   hasNext,
-  hasPrev
+  hasPrev,
 }) => {
-  const { progress, markVideoComplete, toggleBookmark, isBookmarked, addNote } = useLearning();
+  const {
+    progress,
+    markVideoComplete,
+    toggleBookmark,
+    isBookmarked,
+    addNote,
+    updateVideoProgress,
+    settings,
+  } = useLearning();
+
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [quickNote, setQuickNote] = useState('');
+  const playerRef = useRef<YouTubePlayerRef>(null);
+
   const bookmarked = isBookmarked(video.id);
-  const isComplete = progress[video.id]?.status === 'completed';
+  const currentProgress = progress[video.id];
+  const isComplete =
+    currentProgress?.status === 'completed' ||
+    (currentProgress?.status as string) === 'COMPLETED';
 
   // Handle ESC key to exit
   useEffect(() => {
@@ -54,17 +69,37 @@ export const FocusModePlayer: React.FC<FocusModePlayerProps> = ({
     e.preventDefault();
     if (!quickNote.trim()) return;
 
+    const currentSecs = playerRef.current?.getCurrentTime() || currentProgress?.currentTime || 0;
+    const mins = Math.floor(currentSecs / 60);
+    const secs = Math.floor(currentSecs % 60);
+    const formatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
     addNote({
       videoId: video.id,
       videoTitle: video.title,
-      timestampSeconds: 0,
-      timestampFormatted: 'Focus',
-      content: quickNote.trim()
+      timestampSeconds: Math.floor(currentSecs),
+      timestampFormatted: formatted,
+      content: quickNote.trim(),
     });
 
     setQuickNote('');
     setShowNoteModal(false);
   };
+
+  // Stable callbacks — prevent the YouTube player from restarting on re-renders
+  const handleFocusProgress = useCallback(
+    (currTime: number, dur: number) => {
+      updateVideoProgress(video.id, currTime, dur);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [video.id, updateVideoProgress]
+  );
+
+  const handleFocusEnded = useCallback(() => {
+    markVideoComplete(video.id);
+    if (settings.autoPlayNext && hasNext) onNextVideo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video.id, settings.autoPlayNext, hasNext, markVideoComplete, onNextVideo]);
 
   return (
     <div className="fixed inset-0 bg-[#0F0F12] z-50 flex flex-col items-center justify-between p-4 font-sans select-none animate-in fade-in duration-200">
@@ -129,15 +164,16 @@ export const FocusModePlayer: React.FC<FocusModePlayerProps> = ({
 
       {/* Main Video Viewport (Center) */}
       <div className="w-full max-w-5xl flex-1 flex items-center justify-center relative my-auto">
-        <div className="w-full aspect-video border-4 border-black rounded-xl overflow-hidden shadow-[8px_8px_0px_#000] bg-black">
-          <iframe
-            src={`https://www.youtube.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1&autoplay=1`}
-            title={video.title}
-            className="w-full h-full border-none"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        </div>
+        <YouTubeIframePlayer
+          ref={playerRef}
+          youtubeId={video.youtubeId}
+          autoPlay={true}
+          initialTime={settings.resumePosition ? currentProgress?.currentTime || 0 : 0}
+          completionThreshold={settings.markCompleteThreshold || 90}
+          onProgress={handleFocusProgress}
+          onEnded={handleFocusEnded}
+          className="border-4 border-black shadow-[8px_8px_0px_#000]"
+        />
       </div>
 
       {/* Bottom Minimal Navigation Dock */}

@@ -61,29 +61,35 @@ export const AuthModal: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs font-sans"
       onClick={closeAuthModal}
     >
       <div
-        className="w-full max-w-md border-2 border-black bg-white shadow-[8px_8px_0px_#000000] transition-all overflow-hidden"
+        className="w-full max-w-md border-[3px] border-[#111111] bg-white rounded-2xl shadow-[8px_8px_0px_#111111] transition-all overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Black Brand Header Bar */}
-        <div className="flex items-center justify-between border-b-2 border-black bg-black px-5 py-3 text-white">
+        {/* Top Brand Header Bar */}
+        <div className="flex items-center justify-between border-b-[3px] border-[#111111] bg-[#111111] px-5 py-3.5 text-white">
           <div className="flex items-center gap-2.5">
-            <img
-              src="/arh-logo.png"
-              alt="ARH"
-              className="h-6 w-auto object-contain brightness-200 contrast-200"
-            />
-            <div className="text-[11px] font-mono font-bold tracking-widest text-[#CCCCCC] uppercase">
-              <span>ARH AUTHENTICATION</span>
+            <div className="w-5 h-5 flex items-center justify-center">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-5 h-5 text-white fill-none stroke-current stroke-[2.5]"
+              >
+                <polygon points="12 2 2 8.5 2 15.5 12 22 22 15.5 22 8.5 12 2" />
+                <line x1="12" y1="22" x2="12" y2="12" />
+                <line x1="2" y1="8.5" x2="12" y2="12" />
+                <line x1="22" y1="8.5" x2="12" y2="12" />
+              </svg>
+            </div>
+            <div className="text-xs font-display font-black tracking-wider text-white uppercase">
+              <span>LEARNBOX AUTHENTICATION</span>
             </div>
           </div>
           <button
             type="button"
             onClick={closeAuthModal}
-            className="flex h-7 w-7 items-center justify-center border border-white/40 bg-black text-white hover:bg-[#FF5E1E] hover:text-black hover:border-black transition-colors cursor-pointer"
+            className="flex h-7 w-7 items-center justify-center border-2 border-white/40 bg-[#111111] rounded-lg text-white hover:bg-[#FFE600] hover:text-black hover:border-black transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -93,12 +99,12 @@ export const AuthModal: React.FC = () => {
         {/* Modal Body */}
         <div className="p-6 sm:p-7">
           {/* Slogan Banner */}
-          <div className="mb-5 border-2 border-black bg-[#ECECEC] p-3 shadow-[2px_2px_0px_#000000]">
-            <h3 className="text-base font-black uppercase text-black tracking-tight leading-tight">
-              {mode === 'signin' ? 'Sign In to Your Account' : 'Create New ARH Account'}
+          <div className="mb-5 border-2 border-[#111111] bg-[#F4F1EB] rounded-xl p-3 shadow-[2px_2px_0px_#111111]">
+            <h3 className="text-sm font-display font-black uppercase text-[#111111] tracking-tight leading-tight">
+              {mode === 'signin' ? 'Sign In to Your Account' : 'Create New Account'}
             </h3>
-            <p className="text-xs font-medium text-[#555555] mt-1">
-              Synchronize your solved problems, revision bookmarks, and notes to Cloud Firestore in real-time.
+            <p className="text-xs font-medium text-gray-600 mt-1">
+              Synchronize your YouTube progress, playlists, notes, and stats to Cloud Firestore in real-time.
             </p>
           </div>
 
@@ -107,7 +113,7 @@ export const AuthModal: React.FC = () => {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={submitting}
-            className="flex w-full items-center justify-center gap-3 border-2 border-black bg-white px-4 py-2.5 text-xs font-black uppercase text-black shadow-[3px_3px_0px_#000000] hover:bg-[#F5F5F5] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#000000] transition-all cursor-pointer disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-3 border-2 border-[#111111] bg-white rounded-xl px-4 py-2.5 text-xs font-display font-black uppercase text-[#111111] shadow-[3px_3px_0px_#111111] hover:bg-[#FFE600] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#111111] transition-all cursor-pointer disabled:opacity-50"
           >
             <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -133,25 +139,25 @@ export const AuthModal: React.FC = () => {
           {/* Divider */}
           <div className="relative my-4 text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-black/15" />
+              <div className="w-full border-t-2 border-[#111111]/15" />
             </div>
-            <span className="relative bg-white px-3 text-[10px] font-mono font-bold uppercase text-black/60">
+            <span className="relative bg-white px-3 text-[10px] font-mono font-bold uppercase text-[#111111]/60">
               OR USE EMAIL
             </span>
           </div>
 
           {/* Mode Switch Tabs */}
-          <div className="flex border-2 border-black bg-white shadow-[2px_2px_0px_#000000] mb-4">
+          <div className="flex border-2 border-[#111111] rounded-xl overflow-hidden bg-white shadow-[2px_2px_0px_#111111] mb-4">
             <button
               type="button"
               onClick={() => {
                 setMode('signin');
                 clearAuthError();
               }}
-              className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer ${
+              className={`flex-1 py-2 text-xs font-display font-black uppercase tracking-wider transition-colors cursor-pointer ${
                 mode === 'signin'
-                  ? 'bg-black text-white'
-                  : 'text-black hover:bg-black/5'
+                  ? 'bg-[#111111] text-white'
+                  : 'text-[#111111] hover:bg-[#111111]/5'
               }`}
             >
               Sign In
@@ -162,10 +168,10 @@ export const AuthModal: React.FC = () => {
                 setMode('signup');
                 clearAuthError();
               }}
-              className={`flex-1 py-2 text-xs font-black uppercase tracking-wider border-l-2 border-black transition-colors cursor-pointer ${
+              className={`flex-1 py-2 text-xs font-display font-black uppercase tracking-wider border-l-2 border-[#111111] transition-colors cursor-pointer ${
                 mode === 'signup'
-                  ? 'bg-black text-white'
-                  : 'text-black hover:bg-black/5'
+                  ? 'bg-[#111111] text-white'
+                  : 'text-[#111111] hover:bg-[#111111]/5'
               }`}
             >
               Create Account
@@ -174,7 +180,7 @@ export const AuthModal: React.FC = () => {
 
           {/* Error Notice */}
           {authError && (
-            <div className="mb-4 border-2 border-black bg-red-50 p-2.5 text-xs font-bold text-red-600 shadow-[2px_2px_0px_#000000]">
+            <div className="mb-4 border-2 border-[#111111] bg-red-50 rounded-lg p-2.5 text-xs font-bold text-red-600 shadow-[2px_2px_0px_#111111]">
               {authError}
             </div>
           )}
@@ -183,7 +189,7 @@ export const AuthModal: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-3">
             {mode === 'signup' && (
               <div>
-                <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-1">
+                <label className="block text-[11px] font-mono font-black uppercase tracking-wider text-[#111111] mb-1">
                   Full Name
                 </label>
                 <input
@@ -191,13 +197,13 @@ export const AuthModal: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aruchith"
-                  className="w-full border-2 border-black bg-[#F5F5F5] px-3 py-2 text-xs font-mono text-black outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000000]"
+                  className="w-full border-2 border-[#111111] bg-[#F4F1EB] rounded-lg px-3 py-2 text-xs font-mono text-[#111111] outline-none focus:bg-white focus:shadow-[2px_2px_0px_#111111]"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-1">
+              <label className="block text-[11px] font-mono font-black uppercase tracking-wider text-[#111111] mb-1">
                 Email Address
               </label>
               <input
@@ -206,12 +212,12 @@ export const AuthModal: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full border-2 border-black bg-[#F5F5F5] px-3 py-2 text-xs font-mono text-black outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000000]"
+                className="w-full border-2 border-[#111111] bg-[#F4F1EB] rounded-lg px-3 py-2 text-xs font-mono text-[#111111] outline-none focus:bg-white focus:shadow-[2px_2px_0px_#111111]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-1">
+              <label className="block text-[11px] font-mono font-black uppercase tracking-wider text-[#111111] mb-1">
                 Password
               </label>
               <input
@@ -221,26 +227,26 @@ export const AuthModal: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border-2 border-black bg-[#F5F5F5] px-3 py-2 text-xs font-mono text-black outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000000]"
+                className="w-full border-2 border-[#111111] bg-[#F4F1EB] rounded-lg px-3 py-2 text-xs font-mono text-[#111111] outline-none focus:bg-white focus:shadow-[2px_2px_0px_#111111]"
               />
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full mt-2 border-2 border-black bg-[#FF5E1E] px-4 py-2.5 text-xs font-black uppercase text-black shadow-[3px_3px_0px_#000000] hover:bg-black hover:text-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#000000] transition-all cursor-pointer disabled:opacity-50"
+              className="w-full mt-2 border-2 border-[#111111] bg-[#FFE600] rounded-xl px-4 py-2.5 text-xs font-display font-black uppercase text-[#111111] shadow-[3px_3px_0px_#111111] hover:bg-[#111111] hover:text-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#111111] transition-all cursor-pointer disabled:opacity-50"
             >
               {submitting
                 ? 'PROCESSING...'
                 : mode === 'signin'
-                ? 'SIGN IN TO ARH DSA'
-                : 'CREATE ARH ACCOUNT'}
+                ? 'SIGN IN TO LEARNBOX'
+                : 'CREATE LEARNBOX ACCOUNT'}
             </button>
           </form>
 
           {/* Footer Motto */}
-          <div className="mt-5 text-center text-[10px] font-mono font-semibold text-black/50">
-            KEEP SOLVING. KEEP BUILDING. — ARH
+          <div className="mt-5 text-center text-[10px] font-mono font-semibold text-gray-500">
+            VIDEOS. DISCIPLINE. PROGRESS.
           </div>
         </div>
       </div>

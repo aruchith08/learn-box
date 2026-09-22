@@ -4,20 +4,19 @@
 
 @layer base {
   :root {
-    --bg: #ECECEC;
+    --bg: #F4F1EB;
     --card: #FFFFFF;
-    --black: #000000;
-    --border: #000000;
-    --text: #000000;
+    --black: #111111;
+    --border: #111111;
+    --text: #111111;
     --text-muted: #555555;
-    --accent: #FF5E1E;
-    --accent-hover: #E04D12;
+    --accent: #FFE600;
   }
 
   body {
-    background-color: #ECECEC;
-    color: #000000;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F4F1EB;
+    color: #111111;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -31,14 +30,25 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #ECECEC;
-  border-left: 2px solid #000000;
+  background: #F4F1EB;
+  border-left: 2px solid #111111;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #000000;
+  background: #111111;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF5E1E;
+  background: #FFE600;
+}
+
+/* YouTube IFrame API injects an <iframe> that defaults to fixed pixel sizes.
+   Force it to always fill its parent container for responsive layout. */
+.yt-player-wrapper iframe,
+.yt-player-wrapper > div {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
 }

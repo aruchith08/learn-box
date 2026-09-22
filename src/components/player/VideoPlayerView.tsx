@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,12 +12,13 @@ import {
   Share2,
   ExternalLink,
   Copy,
-  Check
+  Check,
 } from '../common/focusIcons';
 import { Video, Playlist } from '../../types/focusLearn';
 import { useLearning } from '../../context/LearningContext';
 import { VideoNotes } from './VideoNotes';
 import { FocusModePlayer } from './FocusModePlayer';
+import { YouTubeIframePlayer, YouTubePlayerRef } from './YouTubeIframePlayer';
 
 interface VideoPlayerViewProps {
   videoId: string;
@@ -28,7 +29,7 @@ interface VideoPlayerViewProps {
 export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   videoId,
   onBack,
-  onSelectVideo
+  onSelectVideo,
 }) => {
   const {
     allVideos,
@@ -38,12 +39,13 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
     markVideoComplete,
     toggleBookmark,
     isBookmarked,
-    settings
+    settings,
   } = useLearning();
 
   const [activeSideTab, setActiveSideTab] = useState<'playlist' | 'notes'>('playlist');
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const playerRef = useRef<YouTubePlayerRef>(null);
 
   // Find active video
   const video = allVideos.find((v) => v.id === videoId) || allVideos[0];
@@ -56,7 +58,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
   // Playlist videos list (or standalone list)
   const relatedVideos: Video[] = React.useMemo(() => {
-    if (currentPlaylist) {
+    if (currentPlaylist && currentPlaylist.videos && currentPlaylist.videos.length > 0) {
       return currentPlaylist.videos;
     }
     return allVideos.filter((v) => !v.playlistId || v.category === video?.category);
@@ -64,11 +66,23 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
   const currentIndex = relatedVideos.findIndex((v) => v.id === video?.id);
   const prevVideo = currentIndex > 0 ? relatedVideos[currentIndex - 1] : null;
-  const nextVideo = currentIndex >= 0 && currentIndex < relatedVideos.length - 1 ? relatedVideos[currentIndex + 1] : null;
+  const nextVideo =
+    currentIndex >= 0 && currentIndex < relatedVideos.length - 1
+      ? relatedVideos[currentIndex + 1]
+      : null;
 
   const bookmarked = video ? isBookmarked(video.id) : false;
   const currentProgress = video ? progress[video.id] : null;
-  const isCompleted = currentProgress?.status === 'completed';
+  const isCompleted =
+    currentProgress?.status === 'completed' ||
+    (currentProgress?.status as string) === 'COMPLETED';
+
+  // Seek handler called from Notes timestamp click
+  const handleSeek = (seconds: number) => {
+    if (playerRef.current) {
+      playerRef.current.seekTo(seconds);
+    }
+  };
 
   // Keyboard shortcuts while viewing player
   useEffect(() => {
@@ -107,13 +121,35 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  // Stable callbacks — wrapped in useCallback so their identity doesn't change
+  // on every re-render. This prevents the YouTubeIframePlayer from destroying
+  // and re-creating the YT.Player instance every time progress state updates.
+  const handleProgress = useCallback(
+    (currTime: number, dur: number) => {
+      if (video) updateVideoProgress(video.id, currTime, dur);
+    },
+    // video.id changes only when a different video is selected, which is correct
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [video?.id, updateVideoProgress]
+  );
+
+  const handleEnded = useCallback(() => {
+    if (video) {
+      markVideoComplete(video.id);
+      if (settings.autoPlayNext && nextVideo) {
+        onSelectVideo(nextVideo.id);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video?.id, settings.autoPlayNext, nextVideo?.id, markVideoComplete, onSelectVideo]);
+
   if (!video) {
     return (
       <div className="p-12 text-center">
         <h2 className="text-xl font-black mb-4">Video Not Found</h2>
         <button
           onClick={onBack}
-          className="bg-[#FFE600] border-2 border-black px-4 py-2 rounded-lg font-black text-xs uppercase"
+          className="bg-[#FFE600] border-2 border-black px-4 py-2 rounded-lg font-black text-xs uppercase cursor-pointer shadow-[2px_2px_0px_#000]"
         >
           Return to Dashboard
         </button>
@@ -186,16 +222,15 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Video Player & Control Bar */}
         <div className="lg:col-span-8 space-y-4">
-          {/* YouTube Embed Player */}
-          <div className="w-full aspect-video bg-black border-3 border-black rounded-xl overflow-hidden shadow-[6px_6px_0px_#000]">
-            <iframe
-              src={`https://www.youtube.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
-              title={video.title}
-              className="w-full h-full border-none"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
+          {/* YouTube Embed Player with official IFrame API & progress tracking */}
+          <YouTubeIframePlayer
+            ref={playerRef}
+            youtubeId={video.youtubeId}
+            initialTime={settings.resumePosition ? currentProgress?.currentTime || 0 : 0}
+            completionThreshold={settings.markCompleteThreshold || 90}
+            onProgress={handleProgress}
+            onEnded={handleEnded}
+          />
 
           {/* Player Toolbar & Actions */}
           <div className="bg-white border-3 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000] flex flex-wrap items-center justify-between gap-3">
@@ -224,7 +259,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
             {/* Video Index Indicator */}
             <div className="text-xs font-mono font-black text-gray-600 bg-[#F4F0EA] border border-black px-2.5 py-1 rounded">
-              Video {currentIndex + 1} of {relatedVideos.length}
+              Video {currentIndex >= 0 ? currentIndex + 1 : 1} of {relatedVideos.length || 1}
             </div>
 
             {/* Mark Complete Button */}
@@ -319,7 +354,14 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   {currentPlaylist ? currentPlaylist.title : 'Course Videos'}
                 </h3>
                 <span className="text-[10px] font-black bg-[#A7F3D0] border border-black px-2 py-0.5 rounded">
-                  {relatedVideos.filter(v => progress[v.id]?.status === 'completed').length} / {relatedVideos.length} DONE
+                  {
+                    relatedVideos.filter(
+                      (v) =>
+                        progress[v.id]?.status === 'completed' ||
+                        (progress[v.id]?.status as string) === 'COMPLETED'
+                    ).length
+                  }{' '}
+                  / {relatedVideos.length} DONE
                 </span>
               </div>
 
@@ -327,7 +369,9 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 {relatedVideos.map((v, idx) => {
                   const isCurrent = v.id === video.id;
                   const itemProgress = progress[v.id];
-                  const itemCompleted = itemProgress?.status === 'completed';
+                  const itemCompleted =
+                    itemProgress?.status === 'completed' ||
+                    (itemProgress?.status as string) === 'COMPLETED';
 
                   return (
                     <div
@@ -356,7 +400,13 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                       {/* Video Title & Duration */}
                       <div className="flex-1 min-w-0">
-                        <div className={`text-xs leading-snug line-clamp-2 ${isCurrent ? 'text-black font-black' : 'text-gray-800 font-bold'}`}>
+                        <div
+                          className={`text-xs leading-snug line-clamp-2 ${
+                            isCurrent
+                              ? 'text-black font-black'
+                              : 'text-gray-800 font-bold'
+                          }`}
+                        >
                           {v.title}
                         </div>
                         {v.duration && (
@@ -381,7 +431,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
               videoId={video.id}
               videoTitle={video.title}
               currentPlaybackSeconds={currentProgress?.currentTime || 0}
-              onSeek={() => {}}
+              onSeek={handleSeek}
             />
           )}
         </div>

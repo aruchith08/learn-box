@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LearningProvider, useLearning } from './context/LearningContext';
+import { useAuth } from './context/AuthContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { DashboardView } from './components/dashboard/DashboardView';
@@ -8,6 +9,7 @@ import { PlaylistsView } from './components/playlists/PlaylistsView';
 import { PlaylistDetailView } from './components/playlists/PlaylistDetailView';
 import { MyVideosView } from './components/videos/MyVideosView';
 import { GlobalTrackerView } from './components/tracker/GlobalTrackerView';
+import { CalendarView } from './components/calendar/CalendarView';
 import { BookmarksView } from './components/bookmarks/BookmarksView';
 import { AllNotesView } from './components/notes/AllNotesView';
 import { StatsView } from './components/stats/StatsView';
@@ -20,12 +22,14 @@ import { ImportCSVModal } from './components/modals/ImportCSVModal';
 import { SearchModal } from './components/modals/SearchModal';
 import { ShortcutsModal } from './components/modals/ShortcutsModal';
 import { SettingsModal } from './components/modals/SettingsModal';
+import { AuthModal } from './components/modals/AuthModal';
 
 import { Playlist } from './types/focusLearn';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 function MainApp() {
   const { activeTab, setActiveTab } = useLearning();
+  const { isAuthModalOpen, closeAuthModal } = useAuth();
 
   // Navigation state
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
@@ -38,6 +42,7 @@ function MainApp() {
   const [isImportCSVModalOpen, setIsImportCSVModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Global Keyboard shortcuts: Ctrl+K / Cmd+K and ?
   useEffect(() => {
@@ -132,6 +137,9 @@ function MainApp() {
       case 'tracker':
         return <GlobalTrackerView onPlayVideo={handlePlayVideo} />;
 
+      case 'calendar':
+        return <CalendarView onPlayVideo={handlePlayVideo} />;
+
       case 'bookmarks':
         return <BookmarksView onPlayVideo={handlePlayVideo} />;
 
@@ -142,7 +150,13 @@ function MainApp() {
         return <StatsView />;
 
       case 'settings':
-        return <StatsView />;
+        return (
+          <DashboardView
+            onSelectPlaylist={handleSelectPlaylist}
+            onPlayVideo={handlePlayVideo}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
+          />
+        );
 
       default:
         return (
@@ -156,11 +170,13 @@ function MainApp() {
   };
 
   return (
-    <div className="flex bg-[#F4F0EA] min-h-screen text-black font-sans selection:bg-[#FFE600] selection:text-black">
+    <div className="flex bg-[#F4F1EB] min-h-screen text-[#111111] font-sans selection:bg-[#FFE600] selection:text-black">
       {/* 1. Dark Sidebar */}
       <Sidebar
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
 
       {/* 2. Main Content Canvas */}
@@ -169,6 +185,7 @@ function MainApp() {
           onOpenSearch={() => setIsSearchModalOpen(true)}
           onOpenAddModal={() => setIsAddModalOpen(true)}
           onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
         <main className="flex-1 overflow-y-auto">
@@ -189,6 +206,7 @@ function MainApp() {
         isOpen={isAddVideoModalOpen}
         onClose={() => setIsAddVideoModalOpen(false)}
         defaultPlaylistId={selectedPlaylist?.id}
+        onOpenVideo={handlePlayVideo}
       />
 
       <CreatePlaylistModal
@@ -216,6 +234,11 @@ function MainApp() {
       <SettingsModal
         isOpen={activeTab === 'settings'}
         onClose={() => setActiveTab('dashboard')}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
       />
     </div>
   );
