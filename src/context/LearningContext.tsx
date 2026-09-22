@@ -123,14 +123,26 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     let isMounted = true;
 
+    function dedupPlaylistVideos(state: UserDatabaseState): UserDatabaseState {
+      const seen = new Set<string>();
+      const deduped = state.playlistVideos.filter((pv) => {
+        const key = `${pv.playlistId}::${pv.videoId}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (deduped.length === state.playlistVideos.length) return state;
+      return { ...state, playlistVideos: deduped };
+    }
+
     async function initUser() {
       if (currentUserId && currentUserId !== 'guest') {
         // User just signed in - migrate any guest progress
         const migrated = await dbService.migrateGuestData(currentUserId);
-        if (isMounted) setDbState(migrated);
+        if (isMounted) setDbState(dedupPlaylistVideos(migrated));
       } else {
         const loaded = await dbService.loadUserData('guest');
-        if (isMounted) setDbState(loaded);
+        if (isMounted) setDbState(dedupPlaylistVideos(loaded));
       }
     }
 
@@ -139,6 +151,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       isMounted = false;
     };
   }, [currentUserId]);
+
 
   // Persist on database state change
   const persistState = useCallback(

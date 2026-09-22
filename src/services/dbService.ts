@@ -215,7 +215,11 @@ export const dbService = {
       userId: newUserId,
       playlists: mergedPlaylists,
       videos: mergedVideos,
-      playlistVideos: [...existingUserState.playlistVideos, ...guestState.playlistVideos],
+      playlistVideos: [...existingUserState.playlistVideos, ...guestState.playlistVideos].filter(
+        (pv, _, arr) =>
+          arr.findIndex((x) => x.playlistId === pv.playlistId && x.videoId === pv.videoId) ===
+          arr.indexOf(pv)
+      ),
       progress: mergedProgress,
       notes: mergedNotes,
       bookmarks: mergedBookmarks,
