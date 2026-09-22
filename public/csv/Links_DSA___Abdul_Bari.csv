@@ -1,0 +1,164 @@
+﻿Title,URL
+1. Introduction to Algorithms,https://www.youtube.com/watch?v=0IAPZzGSbME
+1.1 Priori Analysis and Posteriori Testing,https://www.youtube.com/watch?v=-JTq1BFBwmo
+1.2 Characteristics of Algorithm,https://www.youtube.com/watch?v=FbYzBWdhMb0
+1.3 How Write and Analyze Algorithm,https://www.youtube.com/watch?v=xGYsEqe9Vl0
+1.4 Frequency Count Method,https://www.youtube.com/watch?v=1U3Uwct45IY
+1.5.1 Time Complexity #1,https://www.youtube.com/watch?v=9TlHvipP5yA
+1.5.2 Time Complexity Example #2,https://www.youtube.com/watch?v=9SgLBjXqwd4
+1.5.3 Time Complexity of While and if #3,https://www.youtube.com/watch?v=p1EnSvS3urU
+1.6 Classes of functions,https://www.youtube.com/watch?v=w7t4_JUUTeg
+1.7 Compare Class of Functions,https://www.youtube.com/watch?v=5v-tKX2uRAk
+1.8.1 Asymptotic Notations Big Oh - Omega - Theta #1,https://www.youtube.com/watch?v=A03oI0znAoc
+1.8.2 Asymptotic Notations - Big Oh - Omega - Theta #2,https://www.youtube.com/watch?v=Nd0XDY-jVHs
+1.9 Properties of Asymptotic Notations,https://www.youtube.com/watch?v=NI4OKSvGAgM
+1.10.1 Comparison of Functions #1,https://www.youtube.com/watch?v=mwN18xfwNhk
+1.10.2 Comparison of Functions #2,https://www.youtube.com/watch?v=WlBBTSL0ZRc
+1.11 Best Worst and Average Case Analysis,https://www.youtube.com/watch?v=lj3E24nnPjI
+1.12 Disjoint Sets Data Structure - Weighted Union and Collapsing Find,https://www.youtube.com/watch?v=wU6udHRIkcc
+2 Divide And Conquer,https://www.youtube.com/watch?v=2Rr2tW9zvRg
+2.1.1 Recurrence Relation (T(n)= T(n-1) + 1) #1,https://www.youtube.com/watch?v=4V30R3I1vLI
+2.1.2 Recurrence Relation (T(n)= T(n-1) + n) #2,https://www.youtube.com/watch?v=IawM82BQ4II
+2.1.3 Recurrence Relation (T(n)= T(n-1) + log n) #3,https://www.youtube.com/watch?v=MhT7XmxhaCE
+2.1.4 Recurrence Relation T(n)=2 T(n-1)+1  #4,https://www.youtube.com/watch?v=JvcqtZk2mng
+2.2 Masters Theorem Decreasing Function,https://www.youtube.com/watch?v=CyknhZbfMqc
+2.3.1 Recurrence Relation Dividing Function T(n)=T(n/2)+1 #1,https://www.youtube.com/watch?v=8gt0D0IqU5w
+2.3.2 Recurrence Relation Dividing [ T(n)=T(n/2)+ n].   #2,https://www.youtube.com/watch?v=XcZw01FuH18
+2.3.3 Recurrence Relation [ T(n)= 2T(n/2) +n]  #3,https://www.youtube.com/watch?v=1K9ebQJosvo
+2.4.1 Masters Theorem in Algorithms for Dividing Function #1,https://www.youtube.com/watch?v=OynWkEj0S-s
+2.4.2 Examples for Master Theorem #2,https://www.youtube.com/watch?v=kGcO-nAm9Vc
+2.5 Root function (Recurrence Relation),https://www.youtube.com/watch?v=9rVuyjxzwgM
+2.6.1 Binary Search Iterative Method,https://www.youtube.com/watch?v=C2apEw9pgtw
+2.6.2 Binary Search Recursive Method,https://www.youtube.com/watch?v=uEUXGcc2VXM
+2.6.3 Heap - Heap Sort - Heapify - Priority Queues,https://www.youtube.com/watch?v=HqPJF2L5h9U
+2.7.1  Two Way MergeSort - Iterative method,https://www.youtube.com/watch?v=6pV2IF0fgKY
+2.7.2.  Merge Sort Algorithm,https://www.youtube.com/watch?v=mB5HXBb_HY8
+2.7.3 MergeSort in-depth Analysis,https://www.youtube.com/watch?v=ak-pz7tS5DE
+2.8.1  QuickSort Algorithm,https://www.youtube.com/watch?v=7h1s2SojIRw
+2.8.2 QuickSort Analysis,https://www.youtube.com/watch?v=-qOVVRIZzao
+2.9 Strassens Matrix Multiplication,https://www.youtube.com/watch?v=0oJyNmEbS4w
+3. Greedy Method -  Introduction,https://www.youtube.com/watch?v=ARvQcqJ_-NY
+3.1 Knapsack Problem - Greedy Method,https://www.youtube.com/watch?v=oTTzNMHM05I
+3.2 Job Sequencing with Deadlines - Greedy Method,https://www.youtube.com/watch?v=zPtI8q9gvX8
+3.3 Optimal Merge Pattern - Greedy Method,https://www.youtube.com/watch?v=HHIc5JZyenI
+3.4 Huffman Coding - Greedy Method,https://www.youtube.com/watch?v=co4_ahEDCho
+3.5 Prims and Kruskals Algorithms - Greedy Method,https://www.youtube.com/watch?v=4ZlRH0eK-qQ
+3.6 Dijkstra Algorithm - Single Source Shortest Path - Greedy Method,https://www.youtube.com/watch?v=XB4MIexjvY0
+4 Principle  of Optimality  - Dynamic Programming introduction,https://www.youtube.com/watch?v=5dRGRueKU3M
+4.1 MultiStage Graph - Dynamic Programming,https://www.youtube.com/watch?v=9iE9Mj4m8jk
+4.1.1 MultiStage Graph (Program) - Dynamic Programming,https://www.youtube.com/watch?v=FcScLYJI42E
+4.2 All Pairs Shortest Path (Floyd-Warshall) - Dynamic Programming,https://www.youtube.com/watch?v=oNI0rf2P9gE
+4.3 Matrix Chain Multiplication - Dynamic Programming,https://www.youtube.com/watch?v=prx1psByp7U
+[New] Matrix Chain Multiplication using Dynamic Programming Formula,https://www.youtube.com/watch?v=_WncuhSJZyA
+4.3.1 Matrix Chain Multiplication (Program) - Dynamic Programming,https://www.youtube.com/watch?v=eKkXU3uu2zk
+4.4 Bellman Ford Algorithm - Single Source Shortest Path - Dynamic Programming,https://www.youtube.com/watch?v=FtN3BYH2Zes
+4.5 0/1 Knapsack - Two Methods - Dynamic Programming,https://www.youtube.com/watch?v=nLmhmB6NzcM
+4.5.1 0/1 Knapsack Problem (Program) - Dynamic Programming,https://www.youtube.com/watch?v=zRza99HPvkQ
+4.6 Optimal Binary Search Tree (Successful Search Only) - Dynamic Programming,https://www.youtube.com/watch?v=vLS-zRCHo-Y
+4.6.2 [New] Optimal Binary Search Tree Successful and Unsuccessful Probability - Dynamic Programming,https://www.youtube.com/watch?v=wAy6nDMPYAE
+4.7 [New] Traveling Salesman Problem - Dynamic Programming using Formula,https://www.youtube.com/watch?v=Q4zHb-Swzro
+4.8 Reliability Design - Dynamic Programming,https://www.youtube.com/watch?v=uJOmqBwENB8
+4.9 Longest Common Subsequence (LCS)  - Recursion and Dynamic Programming,https://www.youtube.com/watch?v=sSno9rV8Rhg
+5.1 Graph Traversals - BFS & DFS -Breadth First Search and Depth First Search,https://www.youtube.com/watch?v=pcKY4hjDrxk
+5.2 Articulation Point and Biconnected Components,https://www.youtube.com/watch?v=jFZsDDB0-vo
+6 Introduction to Backtracking - Brute Force Approach,https://www.youtube.com/watch?v=DKCbsiDBN6c
+6.1 N Queens Problem using Backtracking,https://www.youtube.com/watch?v=xFv_Hl4B83A
+6.2 Sum Of Subsets Problem - Backtracking,https://www.youtube.com/watch?v=kyLxTdsT8ws
+6.3 Graph Coloring Problem - Backtracking,https://www.youtube.com/watch?v=052VkKhIaQ4
+6.4 Hamiltonian Cycle - Backtracking,https://www.youtube.com/watch?v=dQr4wZCiJJ4
+7 Branch and Bound Introduction,https://www.youtube.com/watch?v=3RBNPc0_Q6g
+7.1 Job Sequencing with Deadline - Branch and Bound,https://www.youtube.com/watch?v=M7Fl_z7_J2k
+7.2 0/1 Knapsack using Branch and Bound,https://www.youtube.com/watch?v=yV1d-b_NeK8
+7.3 Traveling Salesman Problem - Branch and Bound,https://www.youtube.com/watch?v=1FEP_sNb62k
+8. NP-Hard and NP-Complete Problems,https://www.youtube.com/watch?v=e2cF8a5aAhE
+8.1 NP-Hard Graph Problem - Clique Decision Problem,https://www.youtube.com/watch?v=qZs767KQcvE
+9.1 Knuth-Morris-Pratt KMP String Matching Algorithm,https://www.youtube.com/watch?v=V5-7GzOfADQ
+9.2 Rabin-Karp String Matching Algorithm,https://www.youtube.com/watch?v=qQ8vS2btsxI
+10.1 AVL Tree - Insertion and Rotations,https://www.youtube.com/watch?v=jDM6_TnYIqE
+10.2  B Trees and B+ Trees. How they are useful in Databases,https://www.youtube.com/watch?v=aZjYr87r1b8
+Asymptotic Notations - Simplified,https://www.youtube.com/watch?v=ddsP7NecEBk
+Hashing Technique - Simplified,https://www.youtube.com/watch?v=mFY0J5W8Udk
+Shortest Path Algorithms (Dijkstra and Bellman-Ford)  - Simplified,https://www.youtube.com/watch?v=2raV0H9KqY8
+BFS DFS - Simplified,https://www.youtube.com/watch?v=kyUpc_5705s
+Tower of Hanoi Problem - Made Easy,https://www.youtube.com/watch?v=q6RicK1FCUs
+Row-Major and Column-Major Mapping,https://www.youtube.com/watch?v=MJZd6uPi88E
+Merge Sort Algorithm - Hindi,https://www.youtube.com/watch?v=zXhWPrMLXGo
+[New] Matrix Chain Multiplication using Dynamic Programming Formula,https://www.youtube.com/watch?v=_WncuhSJZyA
+4.6.2 [New] Optimal Binary Search Tree Successful and Unsuccessful Probability - Dynamic Programming,https://www.youtube.com/watch?v=wAy6nDMPYAE
+Bresenham's Line Drawing Algorithm,https://www.youtube.com/watch?v=RGB-wlatStc
+2.6.3 Heap - Heap Sort - Heapify - Priority Queues,https://www.youtube.com/watch?v=HqPJF2L5h9U
+4.9 Longest Common Subsequence (LCS)  - Recursion and Dynamic Programming,https://www.youtube.com/watch?v=sSno9rV8Rhg
+7.3 Traveling Salesman Problem - Branch and Bound,https://www.youtube.com/watch?v=1FEP_sNb62k
+DDA Line Drawing Algorithm - Computer Graphics,https://www.youtube.com/watch?v=W5P8GlaEOSI
+4.8 Reliability Design - Dynamic Programming,https://www.youtube.com/watch?v=uJOmqBwENB8
+8.1 NP-Hard Graph Problem - Clique Decision Problem,https://www.youtube.com/watch?v=qZs767KQcvE
+6.4 Hamiltonian Cycle - Backtracking,https://www.youtube.com/watch?v=dQr4wZCiJJ4
+1.12 Disjoint Sets Data Structure - Weighted Union and Collapsing Find,https://www.youtube.com/watch?v=wU6udHRIkcc
+4.7 [New] Traveling Salesman Problem - Dynamic Programming using Formula,https://www.youtube.com/watch?v=Q4zHb-Swzro
+6. Everything about Variables in JAVA,https://www.youtube.com/watch?v=h1Sq8p2GL2g
+9.2 Rabin-Karp String Matching Algorithm,https://www.youtube.com/watch?v=qQ8vS2btsxI
+10.2  B Trees and B+ Trees. How they are useful in Databases,https://www.youtube.com/watch?v=aZjYr87r1b8
+5. Everything about JAVA Data Types,https://www.youtube.com/watch?v=MuALK4KcNMc
+4. Why public static void main(String args[ ]) ? JAVA,https://www.youtube.com/watch?v=On9mzziI2pU
+3. Why to Set Path ? JAVA,https://www.youtube.com/watch?v=OnbpCg96w0I
+9.1 Knuth-Morris-Pratt KMP String Matching Algorithm,https://www.youtube.com/watch?v=V5-7GzOfADQ
+2. Why and How Java is platform independent,https://www.youtube.com/watch?v=1xz7OxASXUc
+1. Why One should Learn Java - Introduction to Java,https://www.youtube.com/watch?v=-JYLuv7mmxM
+10.1 AVL Tree - Insertion and Rotations,https://www.youtube.com/watch?v=jDM6_TnYIqE
+4.3.1 Matrix Chain Multiplication (Program) - Dynamic Programming,https://www.youtube.com/watch?v=eKkXU3uu2zk
+4.5.1 0/1 Knapsack Problem (Program) - Dynamic Programming,https://www.youtube.com/watch?v=zRza99HPvkQ
+1.1 Priori Analysis and Posteriori Testing,https://www.youtube.com/watch?v=-JTq1BFBwmo
+4.1.1 MultiStage Graph (Program) - Dynamic Programming,https://www.youtube.com/watch?v=FcScLYJI42E
+8. NP-Hard and NP-Complete Problems,https://www.youtube.com/watch?v=e2cF8a5aAhE
+7.2 0/1 Knapsack using Branch and Bound,https://www.youtube.com/watch?v=yV1d-b_NeK8
+7.1 Job Sequencing with Deadline - Branch and Bound,https://www.youtube.com/watch?v=M7Fl_z7_J2k
+6.3 Graph Coloring Problem - Backtracking,https://www.youtube.com/watch?v=052VkKhIaQ4
+7 Branch and Bound Introduction,https://www.youtube.com/watch?v=3RBNPc0_Q6g
+6.2 Sum Of Subsets Problem - Backtracking,https://www.youtube.com/watch?v=kyLxTdsT8ws
+6.1 N Queens Problem using Backtracking,https://www.youtube.com/watch?v=xFv_Hl4B83A
+6 Introduction to Backtracking - Brute Force Approach,https://www.youtube.com/watch?v=DKCbsiDBN6c
+5.2 Articulation Point and Biconnected Components,https://www.youtube.com/watch?v=jFZsDDB0-vo
+5.1 Graph Traversals - BFS & DFS -Breadth First Search and Depth First Search,https://www.youtube.com/watch?v=pcKY4hjDrxk
+4.6 Optimal Binary Search Tree (Successful Search Only) - Dynamic Programming,https://www.youtube.com/watch?v=vLS-zRCHo-Y
+4.7 Traveling Salesperson Problem - Dynamic Programming,https://www.youtube.com/watch?v=XaXsJJh-Q5Y
+4.5 0/1 Knapsack - Two Methods - Dynamic Programming,https://www.youtube.com/watch?v=nLmhmB6NzcM
+4.4 Bellman Ford Algorithm - Single Source Shortest Path - Dynamic Programming,https://www.youtube.com/watch?v=FtN3BYH2Zes
+4.3 Matrix Chain Multiplication - Dynamic Programming,https://www.youtube.com/watch?v=prx1psByp7U
+4.1 MultiStage Graph - Dynamic Programming,https://www.youtube.com/watch?v=9iE9Mj4m8jk
+4.2 All Pairs Shortest Path (Floyd-Warshall) - Dynamic Programming,https://www.youtube.com/watch?v=oNI0rf2P9gE
+4 Principle  of Optimality  - Dynamic Programming introduction,https://www.youtube.com/watch?v=5dRGRueKU3M
+3.6 Dijkstra Algorithm - Single Source Shortest Path - Greedy Method,https://www.youtube.com/watch?v=XB4MIexjvY0
+3.5 Prims and Kruskals Algorithms - Greedy Method,https://www.youtube.com/watch?v=4ZlRH0eK-qQ
+3.4 Huffman Coding - Greedy Method,https://www.youtube.com/watch?v=co4_ahEDCho
+3.2 Job Sequencing with Deadlines - Greedy Method,https://www.youtube.com/watch?v=zPtI8q9gvX8
+3.3 Optimal Merge Pattern - Greedy Method,https://www.youtube.com/watch?v=HHIc5JZyenI
+3.1 Knapsack Problem - Greedy Method,https://www.youtube.com/watch?v=oTTzNMHM05I
+3. Greedy Method -  Introduction,https://www.youtube.com/watch?v=ARvQcqJ_-NY
+2.9 Strassens Matrix Multiplication,https://www.youtube.com/watch?v=0oJyNmEbS4w
+2.8.2 QuickSort Analysis,https://www.youtube.com/watch?v=-qOVVRIZzao
+2.8.1  QuickSort Algorithm,https://www.youtube.com/watch?v=7h1s2SojIRw
+2.7.3 MergeSort in-depth Analysis,https://www.youtube.com/watch?v=ak-pz7tS5DE
+1.5.3 Time Complexity of While and if #3,https://www.youtube.com/watch?v=p1EnSvS3urU
+2.7.2.  Merge Sort Algorithm,https://www.youtube.com/watch?v=mB5HXBb_HY8
+2.7.1  Two Way MergeSort - Iterative method,https://www.youtube.com/watch?v=6pV2IF0fgKY
+2.6.1 Binary Search Iterative Method,https://www.youtube.com/watch?v=C2apEw9pgtw
+2.6.2 Binary Search Recursive Method,https://www.youtube.com/watch?v=uEUXGcc2VXM
+2.4.2 Examples for Master Theorem #2,https://www.youtube.com/watch?v=kGcO-nAm9Vc
+2.4.1 Masters Theorem in Algorithms for Dividing Function #1,https://www.youtube.com/watch?v=OynWkEj0S-s
+2.5 Root function (Recurrence Relation),https://www.youtube.com/watch?v=9rVuyjxzwgM
+2.3.3 Recurrence Relation [ T(n)= 2T(n/2) +n]  #3,https://www.youtube.com/watch?v=1K9ebQJosvo
+2.3.2 Recurrence Relation Dividing [ T(n)=T(n/2)+ n].   #2,https://www.youtube.com/watch?v=XcZw01FuH18
+2.3.1 Recurrence Relation Dividing Function T(n)=T(n/2)+1 #1,https://www.youtube.com/watch?v=8gt0D0IqU5w
+2.2 Masters Theorem Decreasing Function,https://www.youtube.com/watch?v=CyknhZbfMqc
+2.1.4 Recurrence Relation T(n)=2 T(n-1)+1  #4,https://www.youtube.com/watch?v=JvcqtZk2mng
+2.1.3 Recurrence Relation (T(n)= T(n-1) + log n) #3,https://www.youtube.com/watch?v=MhT7XmxhaCE
+2.1.2 Recurrence Relation (T(n)= T(n-1) + n) #2,https://www.youtube.com/watch?v=IawM82BQ4II
+2.1.1 Recurrence Relation (T(n)= T(n-1) + 1) #1,https://www.youtube.com/watch?v=4V30R3I1vLI
+2 Divide And Conquer,https://www.youtube.com/watch?v=2Rr2tW9zvRg
+1.11 Best Worst and Average Case Analysis,https://www.youtube.com/watch?v=lj3E24nnPjI
+1.10.2 Comparison of Functions #2,https://www.youtube.com/watch?v=WlBBTSL0ZRc
+1.10.1 Comparison of Functions #1,https://www.youtube.com/watch?v=mwN18xfwNhk
+1.9 Properties of Asymptotic Notations,https://www.youtube.com/watch?v=NI4OKSvGAgM
+1.8.2 Asymptotic Notations - Big Oh - Omega - Theta #2,https://www.youtube.com/watch?v=Nd0XDY-jVHs
+1.8.1 Asymptotic Notations Big Oh - Omega - Theta #1,https://www.youtube.com/watch?v=A03oI0znAoc
+1.7 Compare Class of Functions,https://www.youtube.com/watch?v=5v-tKX2uRAk

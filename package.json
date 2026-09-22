@@ -1,0 +1,32 @@
+{
+  "name": "abdul-bari-dsa-with-problems",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "local:dev": "node run-vite.js",
+    "local:build": "node run-vite.js build"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "firebase": "^12.19.0",
+    "lucide-react": "^1.45.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.5.6",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}
