@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown } from '../common/focusIcons';
+import { Search, ChevronDown, PanelLeftClose, PanelLeftOpen } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,6 +8,8 @@ interface TopbarProps {
   onOpenAddModal: () => void;
   onOpenShortcutsModal: () => void;
   onToggleMobileSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
+  onToggleDesktopSidebar?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -15,6 +17,8 @@ export const Topbar: React.FC<TopbarProps> = ({
   onOpenAddModal,
   onOpenShortcutsModal,
   onToggleMobileSidebar,
+  isSidebarCollapsed = false,
+  onToggleDesktopSidebar,
 }) => {
   const { settings, setActiveTab } = useLearning();
   const { currentUser, openAuthModal, signOutUser } = useAuth();
@@ -39,6 +43,24 @@ export const Topbar: React.FC<TopbarProps> = ({
           </svg>
         </button>
       </div>
+
+      {/* Desktop Sidebar Toggle */}
+      {onToggleDesktopSidebar && (
+        <div className="hidden lg:flex items-center mr-3 shrink-0">
+          <button
+            onClick={onToggleDesktopSidebar}
+            className="p-2 bg-white border-2 border-[#111111] rounded-xl shadow-[2px_2px_0px_#111111] hover:bg-[#FFE600] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            aria-label={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="w-5 h-5 stroke-[2.5] text-[#111111]" />
+            ) : (
+              <PanelLeftClose className="w-5 h-5 stroke-[2.5] text-[#111111]" />
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Search Input matching reference screenshot */}
       <div className="flex-1 min-w-0 max-w-2xl mx-1 sm:mx-0">

@@ -44,6 +44,23 @@ function MainApp() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('focus_learn_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('focus_learn_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Global Keyboard shortcuts: Ctrl+K / Cmd+K and ?
   useEffect(() => {
@@ -178,6 +195,8 @@ function MainApp() {
         onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebarCollapse}
       />
 
       {/* 2. Main Content Canvas */}
@@ -187,6 +206,8 @@ function MainApp() {
           onOpenAddModal={() => setIsAddModalOpen(true)}
           onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleDesktopSidebar={handleToggleSidebarCollapse}
         />
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 lg:pb-8 w-full max-w-full">
