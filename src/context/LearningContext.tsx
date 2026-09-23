@@ -115,10 +115,22 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState<boolean>(false);
 
-  // Database State
-  const [dbState, setDbState] = useState<UserDatabaseState>(() =>
-    dbService.createInitialState(currentUserId)
-  );
+  // Database State - read synchronously from localStorage to prevent flash of default ordering on reload
+  const [dbState, setDbState] = useState<UserDatabaseState>(() => {
+    try {
+      const key = dbService.getStorageKey(currentUserId);
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.version && parsed.version >= 3) {
+          return dbService.ensurePlaylistOrder(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Initial localStorage load error:', e);
+    }
+    return dbService.createInitialState(currentUserId);
+  });
 
   // Load user data when current user changes (and handle guest migration)
   useEffect(() => {
@@ -138,9 +150,15 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     async function initUser() {
       if (currentUserId && currentUserId !== 'guest') {
-        // User just signed in - migrate any guest progress
-        const migrated = await dbService.migrateGuestData(currentUserId);
-        if (isMounted) setDbState(dedupPlaylistVideos(migrated));
+        const guestKey = dbService.getStorageKey('guest');
+        const hasGuestData = !!localStorage.getItem(guestKey);
+        let userState: UserDatabaseState;
+        if (hasGuestData) {
+          userState = await dbService.migrateGuestData(currentUserId);
+        } else {
+          userState = await dbService.loadUserData(currentUserId);
+        }
+        if (isMounted) setDbState(dedupPlaylistVideos(userState));
       } else {
         const loaded = await dbService.loadUserData('guest');
         if (isMounted) setDbState(dedupPlaylistVideos(loaded));
@@ -862,6 +880,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetToDefaults = useCallback(() => {
     const initialState = dbService.createInitialState(currentUserId);
     setDbState(initialState);
+    dbService.saveLocalUserData(currentUserId, initialState);
   }, [currentUserId]);
 
   return (

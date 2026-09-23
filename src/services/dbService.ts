@@ -35,9 +35,9 @@ export interface UserDatabaseState {
   updatedAt: string;
 }
 
-const STORAGE_PREFIX = 'focus_learn_db_v3_';
+export const STORAGE_PREFIX = 'focus_learn_db_v3_';
 
-function getStorageKey(userId: string): string {
+export function getStorageKey(userId: string): string {
   return `${STORAGE_PREFIX}${userId || 'guest'}`;
 }
 
@@ -60,6 +60,39 @@ function sanitizeForFirestore(val: any): any {
 }
 
 export const dbService = {
+  getStorageKey(userId: string): string {
+    return getStorageKey(userId);
+  },
+
+  /**
+   * Ensure playlistOrder array exists and playlists array matches that exact order
+   */
+  ensurePlaylistOrder(state: UserDatabaseState): UserDatabaseState {
+    if (!state) return state;
+    let order = state.playlistOrder;
+    if (!order || !Array.isArray(order) || order.length === 0) {
+      order = (state.playlists || []).map((p) => p.id);
+    } else {
+      const set = new Set(order);
+      (state.playlists || []).forEach((p) => {
+        if (!set.has(p.id)) {
+          order!.push(p.id);
+        }
+      });
+    }
+    state.playlistOrder = order;
+
+    // Arrange state.playlists according to playlistOrder
+    const orderMap = new Map(order.map((id, idx) => [id, idx]));
+    state.playlists = [...(state.playlists || [])].sort((a, b) => {
+      const idxA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999999;
+      const idxB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999999;
+      return idxA - idxB;
+    });
+
+    return state;
+  },
+
   /**
    * Initialize and load data for a specific user.
    */
@@ -74,6 +107,8 @@ export const dbService = {
         // If older version or legacy state, discard and re-initialize with 0 progress
         if (!localState || (localState.version && localState.version < 3)) {
           localState = null;
+        } else {
+          localState = this.ensurePlaylistOrder(localState);
         }
       }
     } catch (e) {
@@ -88,12 +123,13 @@ export const dbService = {
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as UserDatabaseState;
           if (cloudData && cloudData.version && cloudData.version >= 3) {
-            const cloudTime = new Date(cloudData.updatedAt || 0).getTime();
+            const normalizedCloud = this.ensurePlaylistOrder(cloudData);
+            const cloudTime = new Date(normalizedCloud.updatedAt || 0).getTime();
             const localTime = new Date(localState?.updatedAt || 0).getTime();
             // If cloud is newer or local is empty, use cloud
             if (!localState || cloudTime >= localTime) {
-              this.saveLocalUserData(userId, cloudData);
-              return cloudData;
+              this.saveLocalUserData(userId, normalizedCloud);
+              return normalizedCloud;
             } else if (localState && localTime > cloudTime) {
               // Local is newer, sync to cloud
               this.syncToCloud(userId, localState).catch((err) => console.warn('Cloud sync update error:', err));
@@ -109,11 +145,13 @@ export const dbService = {
     }
 
     if (localState) {
-      return localState;
+      return this.ensurePlaylistOrder(localState);
     }
 
-    // If new user, initialize with clean zero-progress curriculum data
-    return this.createInitialState(userId);
+    // If new user, initialize with clean zero-progress curriculum data and save once
+    const initialState = this.createInitialState(userId);
+    this.saveLocalUserData(userId, initialState);
+    return initialState;
   },
 
   createInitialState(userId: string): UserDatabaseState {
@@ -159,7 +197,7 @@ export const dbService = {
       updatedAt: new Date().toISOString(),
     };
 
-    this.saveLocalUserData(userId, state);
+    // Note: createInitialState is a pure factory. Do not call saveLocalUserData here.
     return state;
   },
 
@@ -196,8 +234,35 @@ export const dbService = {
    * Migrate guest data into authenticated user account upon sign in
    */
   async migrateGuestData(newUserId: string): Promise<UserDatabaseState> {
-    const guestState = await this.loadUserData('guest');
+    const guestKey = getStorageKey('guest');
+    const guestRaw = localStorage.getItem(guestKey);
     const existingUserState = await this.loadUserData(newUserId);
+
+    if (!guestRaw) {
+      return this.ensurePlaylistOrder(existingUserState);
+    }
+
+    let guestState: UserDatabaseState | null = null;
+    try {
+      guestState = JSON.parse(guestRaw);
+    } catch {
+      guestState = null;
+    }
+
+    // If guest storage is empty or has zero progress/notes/bookmarks/activity, don't clobber user state
+    const hasGuestProgress = guestState && Object.keys(guestState.progress || {}).length > 0;
+    const hasGuestNotes = guestState && (guestState.notes || []).length > 0;
+    const hasGuestBookmarks = guestState && (guestState.bookmarks || []).length > 0;
+    const hasGuestActivity = guestState && (guestState.activity || []).length > 0;
+
+    if (!guestState || (!hasGuestProgress && !hasGuestNotes && !hasGuestBookmarks && !hasGuestActivity)) {
+      try {
+        localStorage.removeItem(guestKey);
+      } catch (e) {
+        console.warn('Error clearing guest storage:', e);
+      }
+      return this.ensurePlaylistOrder(existingUserState);
+    }
 
     // Merge progress, bookmarks, notes, and added playlists
     const mergedProgress = {
@@ -223,7 +288,7 @@ export const dbService = {
       }
     });
 
-    // Merge playlist ordering prioritizing user's cloud account order, with fallback to guest order
+    // Merge playlist ordering prioritizing user's cloud/account order
     let mergedPlaylistOrder: string[] = [];
     if (existingUserState.playlistOrder && existingUserState.playlistOrder.length > 0) {
       mergedPlaylistOrder = [...existingUserState.playlistOrder];
@@ -285,8 +350,17 @@ export const dbService = {
       updatedAt: new Date().toISOString(),
     };
 
-    this.saveLocalUserData(newUserId, mergedState);
-    return mergedState;
+    const finalState = this.ensurePlaylistOrder(mergedState);
+    this.saveLocalUserData(newUserId, finalState);
+
+    // Clean up guest state after successful migration
+    try {
+      localStorage.removeItem(guestKey);
+    } catch (e) {
+      console.warn('Error clearing guest storage after migration:', e);
+    }
+
+    return finalState;
   },
 
   /**
