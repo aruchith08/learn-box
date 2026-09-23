@@ -24,6 +24,7 @@ export interface UserDatabaseState {
   version: number;
   userId: string;
   playlists: Playlist[];
+  playlistOrder?: string[];
   videos: Video[]; // Canonical video table
   playlistVideos: PlaylistVideo[]; // Join table
   progress: Record<string, UserVideoProgress>;
@@ -38,6 +39,24 @@ const STORAGE_PREFIX = 'focus_learn_db_v3_';
 
 function getStorageKey(userId: string): string {
   return `${STORAGE_PREFIX}${userId || 'guest'}`;
+}
+
+/**
+ * Clean data recursively to strip unsupported undefined fields before sending to Firestore
+ */
+function sanitizeForFirestore(val: any): any {
+  if (val === undefined) return null;
+  if (val === null || typeof val !== 'object') return val;
+  if (Array.isArray(val)) {
+    return val.map(sanitizeForFirestore);
+  }
+  const result: Record<string, any> = {};
+  for (const [k, v] of Object.entries(val)) {
+    if (v !== undefined) {
+      result[k] = sanitizeForFirestore(v);
+    }
+  }
+  return result;
 }
 
 export const dbService = {
@@ -69,12 +88,20 @@ export const dbService = {
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as UserDatabaseState;
           if (cloudData && cloudData.version && cloudData.version >= 3) {
+            const cloudTime = new Date(cloudData.updatedAt || 0).getTime();
+            const localTime = new Date(localState?.updatedAt || 0).getTime();
             // If cloud is newer or local is empty, use cloud
-            if (!localState || new Date(cloudData.updatedAt) > new Date(localState.updatedAt || 0)) {
+            if (!localState || cloudTime >= localTime) {
               this.saveLocalUserData(userId, cloudData);
               return cloudData;
+            } else if (localState && localTime > cloudTime) {
+              // Local is newer, sync to cloud
+              this.syncToCloud(userId, localState).catch((err) => console.warn('Cloud sync update error:', err));
             }
           }
+        } else if (localState) {
+          // Document does not exist in Firestore yet, push local state
+          this.syncToCloud(userId, localState).catch((err) => console.warn('Initial cloud seed error:', err));
         }
       } catch (err) {
         console.warn('Firestore load warning:', err);
@@ -104,16 +131,19 @@ export const dbService = {
       }
     });
 
+    const initialPlaylists = INITIAL_PLAYLISTS.map((pl) => ({
+      ...pl,
+      completedVideos: 0,
+      progressPercentage: 0,
+      lastWatchedVideoId: undefined,
+      lastWatchedAt: undefined,
+    }));
+
     const state: UserDatabaseState = {
       version: 3,
       userId,
-      playlists: INITIAL_PLAYLISTS.map((pl) => ({
-        ...pl,
-        completedVideos: 0,
-        progressPercentage: 0,
-        lastWatchedVideoId: undefined,
-        lastWatchedAt: undefined,
-      })),
+      playlists: initialPlaylists,
+      playlistOrder: initialPlaylists.map((pl) => pl.id),
       videos: INITIAL_VIDEOS,
       playlistVideos,
       progress: {}, // Fresh start has 0 progress
@@ -155,7 +185,8 @@ export const dbService = {
     if (!db || !userId || userId === 'guest') return;
     try {
       const docRef = doc(db, 'user_learning', userId);
-      await setDoc(docRef, state, { merge: true });
+      const cleanData = sanitizeForFirestore(state);
+      await setDoc(docRef, cleanData, { merge: true });
     } catch (err) {
       console.warn('Background Firestore sync error:', err);
     }
@@ -192,6 +223,31 @@ export const dbService = {
       }
     });
 
+    // Merge playlist ordering prioritizing user's cloud account order, with fallback to guest order
+    let mergedPlaylistOrder: string[] = [];
+    if (existingUserState.playlistOrder && existingUserState.playlistOrder.length > 0) {
+      mergedPlaylistOrder = [...existingUserState.playlistOrder];
+    } else if (guestState.playlistOrder && guestState.playlistOrder.length > 0) {
+      mergedPlaylistOrder = [...guestState.playlistOrder];
+    } else {
+      mergedPlaylistOrder = mergedPlaylists.map((p) => p.id);
+    }
+
+    // Ensure all merged playlists exist in the playlistOrder
+    mergedPlaylists.forEach((p) => {
+      if (!mergedPlaylistOrder.includes(p.id)) {
+        mergedPlaylistOrder.push(p.id);
+      }
+    });
+
+    // Order mergedPlaylists according to mergedPlaylistOrder
+    const orderMap = new Map(mergedPlaylistOrder.map((id, idx) => [id, idx]));
+    mergedPlaylists.sort((a, b) => {
+      const idxA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999999;
+      const idxB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999999;
+      return idxA - idxB;
+    });
+
     const existingNoteIds = new Set(existingUserState.notes.map((n) => n.id));
     const mergedNotes = [...existingUserState.notes];
     guestState.notes.forEach((n) => {
@@ -211,9 +267,10 @@ export const dbService = {
     });
 
     const mergedState: UserDatabaseState = {
-      version: 2,
+      version: 3,
       userId: newUserId,
       playlists: mergedPlaylists,
+      playlistOrder: mergedPlaylistOrder,
       videos: mergedVideos,
       playlistVideos: [...existingUserState.playlistVideos, ...guestState.playlistVideos].filter(
         (pv, _, arr) =>

@@ -171,7 +171,7 @@ function MainApp() {
   };
 
   return (
-    <div className="flex bg-[#F4F1EB] min-h-screen text-[#111111] font-sans selection:bg-[#FFE600] selection:text-black w-full max-w-full overflow-x-hidden">
+    <div className="flex bg-[#F4F1EB] h-screen h-[100dvh] text-[#111111] font-sans selection:bg-[#FFE600] selection:text-black w-full max-w-full overflow-hidden">
       {/* 1. Dark Sidebar */}
       <Sidebar
         onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -181,7 +181,7 @@ function MainApp() {
       />
 
       {/* 2. Main Content Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden">
+      <div className="flex-1 flex flex-col h-screen h-[100dvh] min-w-0 w-full max-w-full overflow-hidden">
         <Topbar
           onOpenSearch={() => setIsSearchModalOpen(true)}
           onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -189,7 +189,7 @@ function MainApp() {
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 lg:pb-0 w-full max-w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 lg:pb-8 w-full max-w-full">
           {renderContent()}
         </main>
 

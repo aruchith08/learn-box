@@ -193,7 +193,17 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Enriched playlists with dynamic calculation of completion and videos
   const playlists: Playlist[] = useMemo(() => {
-    return dbState.playlists.map((pl) => {
+    let orderedPlaylists = dbState.playlists;
+    if (dbState.playlistOrder && dbState.playlistOrder.length > 0) {
+      const orderMap = new Map(dbState.playlistOrder.map((id, idx) => [id, idx]));
+      orderedPlaylists = [...dbState.playlists].sort((a, b) => {
+        const idxA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999999;
+        const idxB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999999;
+        return idxA - idxB;
+      });
+    }
+
+    return orderedPlaylists.map((pl) => {
       const pvs = dbState.playlistVideos
         .filter((pv) => pv.playlistId === pl.id)
         .sort((a, b) => a.position - b.position);
@@ -217,7 +227,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         progressPercentage: pct,
       };
     });
-  }, [dbState.playlists, dbState.playlistVideos, allVideos, dbState.progress]);
+  }, [dbState.playlists, dbState.playlistOrder, dbState.playlistVideos, allVideos, dbState.progress]);
 
   // Dynamic real metrics
   const metrics: Metrics = useMemo(() => {
@@ -508,9 +518,12 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
 
       setDbState((prev) => {
+        const nextOrder = [newPlaylist.id, ...(prev.playlistOrder || prev.playlists.map((p) => p.id))];
         const nextState = {
           ...prev,
           playlists: [newPlaylist, ...prev.playlists],
+          playlistOrder: nextOrder,
+          updatedAt: new Date().toISOString(),
           activity: [
             {
               id: 'act-' + Date.now(),
@@ -588,11 +601,14 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           createdAt: new Date().toISOString(),
         };
 
+        const nextOrder = [createdPlaylist.id, ...(prev.playlistOrder || prev.playlists.map((p) => p.id))];
         const nextState = {
           ...prev,
           playlists: [createdPlaylist, ...prev.playlists],
+          playlistOrder: nextOrder,
           videos: updatedVideos,
           playlistVideos: [...prev.playlistVideos, ...newPlaylistVideos],
+          updatedAt: new Date().toISOString(),
           activity: [
             {
               id: 'act-' + Date.now(),
@@ -634,10 +650,15 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           reordered.push(pl);
         });
 
-        const nextState = {
+        const nextOrder = reordered.map((p) => p.id);
+
+        const nextState: UserDatabaseState = {
           ...prev,
           playlists: reordered,
+          playlistOrder: nextOrder,
+          updatedAt: new Date().toISOString(),
         };
+
         dbService.saveLocalUserData(currentUserId, nextState);
         return nextState;
       });
@@ -660,6 +681,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const nextState = {
           ...prev,
           playlistVideos: [...otherPvs, ...reorderedPvs],
+          updatedAt: new Date().toISOString(),
         };
         dbService.saveLocalUserData(currentUserId, nextState);
         return nextState;
@@ -685,6 +707,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           progress: nextProgress,
           bookmarks: nextBookmarks,
           notes: nextNotes,
+          updatedAt: new Date().toISOString(),
         };
         dbService.saveLocalUserData(currentUserId, nextState);
         return nextState;
@@ -699,11 +722,16 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Preserves canonical videos! Only removes playlist and its playlist_videos join records
         const updatedPlaylists = prev.playlists.filter((p) => p.id !== playlistId);
         const updatedPlaylistVideos = prev.playlistVideos.filter((pv) => pv.playlistId !== playlistId);
+        const updatedOrder = (prev.playlistOrder || prev.playlists.map((p) => p.id)).filter(
+          (id) => id !== playlistId
+        );
 
-        const nextState = {
+        const nextState: UserDatabaseState = {
           ...prev,
           playlists: updatedPlaylists,
+          playlistOrder: updatedOrder,
           playlistVideos: updatedPlaylistVideos,
+          updatedAt: new Date().toISOString(),
         };
         dbService.saveLocalUserData(currentUserId, nextState);
         return nextState;

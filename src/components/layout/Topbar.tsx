@@ -24,7 +24,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="h-16 sm:h-18 bg-[#F4F1EB] border-b-[3px] border-[#111111] px-3 sm:px-8 flex items-center justify-between sticky top-0 z-30 font-sans w-full max-w-full">
+    <header className="h-16 sm:h-18 shrink-0 bg-[#F4F1EB] border-b-[3px] border-[#111111] px-3 sm:px-8 flex items-center justify-between sticky top-0 z-30 font-sans w-full max-w-full">
       {/* Mobile Hamburger Menu */}
       <div className="flex items-center gap-2 lg:hidden mr-1 sm:mr-2 shrink-0">
         <button
