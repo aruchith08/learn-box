@@ -206,8 +206,6 @@ function MainApp() {
           onOpenAddModal={() => setIsAddModalOpen(true)}
           onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          isSidebarCollapsed={isSidebarCollapsed}
-          onToggleDesktopSidebar={handleToggleSidebarCollapse}
         />
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 lg:pb-8 w-full max-w-full">
