@@ -84,6 +84,7 @@ interface LearningContextType {
       duration?: string;
     }>
   ) => Playlist;
+  reorderPlaylists: (orderedPlaylistIds: string[]) => void;
   reorderPlaylistVideos: (playlistId: string, orderedVideoIds: string[]) => void;
   deleteVideo: (videoId: string) => void;
   deletePlaylist: (playlistId: string) => void;
@@ -614,6 +615,36 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [currentUserId]
   );
 
+  const reorderPlaylists = useCallback(
+    (orderedPlaylistIds: string[]) => {
+      setDbState((prev) => {
+        const playlistMap = new Map(prev.playlists.map((pl) => [pl.id, pl]));
+        const reordered: Playlist[] = [];
+
+        orderedPlaylistIds.forEach((id) => {
+          const pl = playlistMap.get(id);
+          if (pl) {
+            reordered.push(pl);
+            playlistMap.delete(id);
+          }
+        });
+
+        // Add any remaining playlists not in the ordered list
+        playlistMap.forEach((pl) => {
+          reordered.push(pl);
+        });
+
+        const nextState = {
+          ...prev,
+          playlists: reordered,
+        };
+        dbService.saveLocalUserData(currentUserId, nextState);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
   const reorderPlaylistVideos = useCallback(
     (playlistId: string, orderedVideoIds: string[]) => {
       setDbState((prev) => {
@@ -839,6 +870,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addVideo,
         addPlaylist,
         importPlaylistFromCSV,
+        reorderPlaylists,
         reorderPlaylistVideos,
         deleteVideo,
         deletePlaylist,

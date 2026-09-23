@@ -19,6 +19,10 @@ import {
   Edit,
   Copy,
   FolderPlus,
+  ChevronUp,
+  ChevronDown,
+  ListFilter,
+  Check,
 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { Playlist } from '../../types/focusLearn';
@@ -36,12 +40,25 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
   onOpenAddModal,
   onOpenImportCSV,
 }) => {
-  const { playlists, progress, deletePlaylist, addPlaylist } = useLearning();
+  const { playlists, progress, deletePlaylist, addPlaylist, reorderPlaylists } = useLearning();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
+
+  const handleMovePlaylist = (index: number, direction: 'up' | 'down') => {
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= playlists.length) return;
+
+    const newOrder = [...playlists];
+    const temp = newOrder[index];
+    newOrder[index] = newOrder[targetIdx];
+    newOrder[targetIdx] = temp;
+
+    reorderPlaylists(newOrder.map((p) => p.id));
+  };
 
   const filteredPlaylists = playlists.filter(
     (p) =>
@@ -127,7 +144,29 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => setIsReordering(!isReordering)}
+            className={`flex items-center gap-2 border-2 border-black px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#000] transition-all cursor-pointer ${
+              isReordering
+                ? 'bg-black text-[#FFE600] border-black hover:bg-neutral-800'
+                : 'bg-white hover:bg-[#FFE600] text-black'
+            }`}
+            title="Toggle Playlist Reordering"
+          >
+            {isReordering ? (
+              <>
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span>Done Reordering</span>
+              </>
+            ) : (
+              <>
+                <ListFilter className="w-3.5 h-3.5" />
+                <span>Reorder Playlists</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={onOpenImportCSV}
             className="flex items-center gap-2 bg-[#F4F0EA] border-2 border-black px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#000] hover:bg-white transition-all cursor-pointer"
@@ -162,21 +201,54 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
 
       {/* Playlists Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPlaylists.map((pl) => {
+        {filteredPlaylists.map((pl, idx) => {
           const stats = getPlaylistStats(pl);
           const { icon: Icon, bg } = getIconForPlaylist(pl.title);
+          const actualIndex = playlists.findIndex((p) => p.id === pl.id);
 
           return (
             <div
               key={pl.id}
-              className="bg-white border-3 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#000] transition-all flex flex-col justify-between relative"
+              className={`bg-white border-3 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#000] transition-all flex flex-col justify-between relative ${
+                isReordering ? 'ring-2 ring-[#FFE600] ring-offset-2' : ''
+              }`}
             >
               <div>
                 <div className="flex items-start justify-between mb-3">
-                  <div
-                    className={`w-12 h-12 ${bg} border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_#000]`}
-                  >
-                    <Icon className="w-6 h-6 text-black stroke-[2.5]" />
+                  <div className="flex items-center gap-2.5">
+                    {/* Reorder Arrows in Reorder Mode */}
+                    {isReordering && (
+                      <div className="flex flex-col gap-1 shrink-0 bg-[#F4F0EA] border-2 border-black rounded p-1 shadow-[1px_1px_0px_#000]">
+                        <button
+                          disabled={actualIndex <= 0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMovePlaylist(actualIndex, 'up');
+                          }}
+                          className="p-1 hover:bg-[#FFE600] rounded disabled:opacity-20 cursor-pointer transition-colors"
+                          title="Move Playlist Earlier"
+                        >
+                          <ChevronUp className="w-4 h-4 text-black stroke-[3]" />
+                        </button>
+                        <button
+                          disabled={actualIndex >= playlists.length - 1}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMovePlaylist(actualIndex, 'down');
+                          }}
+                          className="p-1 hover:bg-[#FFE600] rounded disabled:opacity-20 cursor-pointer transition-colors"
+                          title="Move Playlist Later"
+                        >
+                          <ChevronDown className="w-4 h-4 text-black stroke-[3]" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div
+                      className={`w-12 h-12 ${bg} border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_#000]`}
+                    >
+                      <Icon className="w-6 h-6 text-black stroke-[2.5]" />
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -211,6 +283,30 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
                           >
                             <FolderClosed className="w-3.5 h-3.5" />
                             <span>Open Playlist</span>
+                          </button>
+
+                          <button
+                            disabled={actualIndex <= 0}
+                            onClick={() => {
+                              setActiveMenuId(null);
+                              handleMovePlaylist(actualIndex, 'up');
+                            }}
+                            className="w-full text-left px-3.5 py-2 hover:bg-[#FFE600] flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Move Earlier (Up)</span>
+                          </button>
+
+                          <button
+                            disabled={actualIndex >= playlists.length - 1}
+                            onClick={() => {
+                              setActiveMenuId(null);
+                              handleMovePlaylist(actualIndex, 'down');
+                            }}
+                            className="w-full text-left px-3.5 py-2 hover:bg-[#FFE600] flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Move Later (Down)</span>
                           </button>
 
                           <button
