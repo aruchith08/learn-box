@@ -11,12 +11,7 @@
     <a href="https://github.com/aruchith08/learn-box/stargazers"><img src="https://img.shields.io/github/stars/aruchith08/learn-box?style=for-the-badge&color=FFE600&labelColor=111111" alt="Stars" /></a>
     <a href="https://github.com/aruchith08/learn-box/network/members"><img src="https://img.shields.io/github/forks/aruchith08/learn-box?style=for-the-badge&color=A7F3D0&labelColor=111111" alt="Forks" /></a>
     <a href="https://github.com/aruchith08/learn-box/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-DDD6FE?style=for-the-badge&labelColor=111111" alt="License" /></a>
-    <a href="https://vercel.com/new/clone?repository-url=https://github.com/aruchith08/learn-box"><img src="https://img.shields.io/badge/Deploy%20With-Vercel-FF85A1?style=for-the-badge&logo=vercel&logoColor=white&labelColor=111111" alt="Deploy to Vercel" /></a>
   </p>
-
-  <br />
-
-  [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aruchith08/learn-box)
 
 </div>
 
@@ -145,14 +140,15 @@ service cloud.firestore {
 
 ## 🌐 Deploy to Vercel
 
-Learn Box is pre-configured for one-click deployment via Vercel with clean client-side routing.
+Learn Box is pre-configured for deployment via Vercel with clean client-side routing.
 
-### Option A: One-Click Deploy
-Click the button below:
+### Deploying via Vercel Dashboard
+1. Go to [vercel.com/new](https://vercel.com/new).
+2. Select **Import Git Repository** and choose `aruchith08/learn-box`.
+3. Vercel will auto-detect Vite and set the build settings automatically.
+4. Click **Deploy**.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aruchith08/learn-box)
-
-### Option B: Vercel CLI
+### Deploying via Vercel CLI
 ```bash
 npm i -g vercel
 vercel
