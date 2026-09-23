@@ -189,7 +189,7 @@ function MainApp() {
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 lg:pb-8 w-full max-w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 lg:pb-8 w-full max-w-full">
           {renderContent()}
         </main>
 
