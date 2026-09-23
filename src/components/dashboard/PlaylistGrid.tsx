@@ -107,11 +107,11 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
               <div
                 key={pl.id}
                 onClick={() => onSelectPlaylist(pl)}
-                className="bg-white border-[3px] border-[#111111] rounded-2xl p-4 shadow-[4px_4px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#111111] transition-all cursor-pointer flex items-center gap-4 relative group"
+                className="bg-white border-[2.5px] sm:border-[3px] border-[#111111] rounded-2xl p-3 sm:p-4 shadow-[3px_3px_0px_#111111] sm:shadow-[4px_4px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#111111] transition-all cursor-pointer flex items-center gap-3 sm:gap-4 relative group w-full"
               >
                 {/* Left Colored Square with Icon and # Label */}
                 <div
-                  className={`w-16 h-16 sm:w-18 sm:h-18 ${bg} border-2 border-[#111111] rounded-xl flex items-center justify-center relative shrink-0 shadow-[2px_2px_0px_#111111]`}
+                  className={`w-14 h-14 sm:w-18 sm:h-18 ${bg} border-2 border-[#111111] rounded-xl flex items-center justify-center relative shrink-0 shadow-[2px_2px_0px_#111111]`}
                 >
                   <span className="absolute top-1 left-1.5 font-mono text-[9px] font-black text-[#111111]/70">
                     {label}

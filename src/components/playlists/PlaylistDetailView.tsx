@@ -93,9 +93,9 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
       </div>
 
       {/* Playlist Hero Banner */}
-      <div className="bg-white border-3 border-black rounded-xl p-6 shadow-[5px_5px_0px_#000] mb-6">
+      <div className="bg-white border-2 sm:border-3 border-black rounded-xl p-4 sm:p-6 shadow-[3px_3px_0px_#000] sm:shadow-[5px_5px_0px_#000] mb-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex-1 min-w-[300px]">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <span className="bg-[#DDD6FE] text-purple-900 border border-black font-black text-[11px] px-2.5 py-0.5 rounded uppercase">
                 {playlist.category || 'CURRICULUM'}
@@ -176,7 +176,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
       </div>
 
       {/* Video Table List */}
-      <div className="bg-white border-3 border-black rounded-xl overflow-hidden shadow-[5px_5px_0px_#000]">
+      <div className="bg-white border-2 sm:border-3 border-black rounded-xl overflow-hidden shadow-[3px_3px_0px_#000] sm:shadow-[5px_5px_0px_#000]">
         <div className="divide-y-2 divide-black">
           {filteredVideos.length === 0 ? (
             <div className="p-8 text-center text-gray-500 font-bold text-xs">
@@ -191,7 +191,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
               return (
                 <div
                   key={video.id}
-                  className={`p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
+                  className={`p-3 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 transition-colors ${
                     isCompleted ? 'bg-[#F9FCF9]' : 'hover:bg-[#F4F0EA]'
                   }`}
                 >

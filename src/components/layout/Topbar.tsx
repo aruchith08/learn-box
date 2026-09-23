@@ -24,12 +24,12 @@ export const Topbar: React.FC<TopbarProps> = ({
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="h-18 bg-[#F4F1EB] border-b-[3px] border-[#111111] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 font-sans">
+    <header className="h-16 sm:h-18 bg-[#F4F1EB] border-b-[3px] border-[#111111] px-3 sm:px-8 flex items-center justify-between sticky top-0 z-30 font-sans w-full max-w-full">
       {/* Mobile Hamburger Menu */}
-      <div className="flex items-center gap-3 lg:hidden mr-2">
+      <div className="flex items-center gap-2 lg:hidden mr-1 sm:mr-2 shrink-0">
         <button
           onClick={onToggleMobileSidebar}
-          className="p-2 bg-white border-2 border-[#111111] rounded-lg shadow-[2px_2px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+          className="p-1.5 sm:p-2 bg-white border-2 border-[#111111] rounded-lg shadow-[2px_2px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 transition-all"
           title="Open Menu"
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-current stroke-[2.5] text-[#111111] fill-none">
@@ -41,30 +41,30 @@ export const Topbar: React.FC<TopbarProps> = ({
       </div>
 
       {/* Search Input matching reference screenshot */}
-      <div className="flex-1 max-w-2xl">
+      <div className="flex-1 min-w-0 max-w-2xl mx-1 sm:mx-0">
         <button
           onClick={onOpenSearch}
-          className="w-full flex items-center gap-3.5 bg-white border-[2.5px] border-[#111111] rounded-xl px-4 py-2.5 shadow-[3px_3px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#111111] transition-all cursor-pointer text-gray-700 group"
+          className="w-full flex items-center gap-2 sm:gap-3.5 bg-white border-2 sm:border-[2.5px] border-[#111111] rounded-xl px-2.5 sm:px-4 py-2 sm:py-2.5 shadow-[2px_2px_0px_#111111] sm:shadow-[3px_3px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#111111] transition-all cursor-pointer text-gray-700 group"
         >
-          <Search className="w-4 h-4 text-[#111111] stroke-[2.5]" />
+          <Search className="w-4 h-4 text-[#111111] stroke-[2.5] shrink-0" />
           <span className="text-xs sm:text-sm font-semibold text-gray-400 flex-1 text-left truncate">
-            Search your videos, playlists, topics...
+            Search videos, playlists...
           </span>
-          <kbd className="hidden sm:inline-block text-[10px] font-mono font-black bg-[#F4F1EB] border-2 border-[#111111] px-2 py-0.5 rounded shadow-[1px_1px_0px_#111111] text-[#111111]">
+          <kbd className="hidden sm:inline-block text-[10px] font-mono font-black bg-[#F4F1EB] border-2 border-[#111111] px-2 py-0.5 rounded shadow-[1px_1px_0px_#111111] text-[#111111] shrink-0">
             Ctrl K
           </kbd>
         </button>
       </div>
 
-      {/* Right Controls: Bell + User Profile */}
-      <div className="flex items-center gap-3.5 ml-4">
+      {/* Right Controls: User Profile */}
+      <div className="flex items-center gap-2 sm:gap-3.5 ml-1 sm:ml-4 shrink-0">
         {/* User Badge matching reference screenshot */}
         <div className="relative">
           <button
             onClick={() => setShowUserDropdown(!showUserDropdown)}
-            className="flex items-center gap-3 bg-white border-[2.5px] border-[#111111] pl-2 pr-3 py-1.5 rounded-xl shadow-[3px_3px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#111111] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-3 bg-white border-2 sm:border-[2.5px] border-[#111111] p-1 sm:pl-2 sm:pr-3 sm:py-1.5 rounded-xl shadow-[2px_2px_0px_#111111] sm:shadow-[3px_3px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#111111] transition-all cursor-pointer"
           >
-            <div className="w-8 h-8 bg-[#111111] text-white font-display font-black text-sm rounded-full flex items-center justify-center border-2 border-[#111111] shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#111111] text-white font-display font-black text-xs sm:text-sm rounded-full flex items-center justify-center border-2 border-[#111111] shrink-0">
               {initial}
             </div>
             <div className="text-left hidden sm:block leading-tight">
@@ -75,7 +75,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                 {settings.tagline || 'KEEP LEARNING.'}
               </div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-[#111111] stroke-[2.5]" />
+            <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#111111] stroke-[2.5]" />
           </button>
 
           {/* Dropdown Menu */}

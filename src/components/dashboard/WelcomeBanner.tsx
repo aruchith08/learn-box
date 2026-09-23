@@ -31,18 +31,18 @@ export const WelcomeBanner: React.FC = () => {
       </div>
 
       {/* Right Quote & Graphic Card (6 cols) */}
-      <div className="lg:col-span-6 bg-[#DDD6FE] border-[3px] border-[#111111] rounded-2xl p-4 sm:p-6 shadow-[4px_4px_0px_#111111] sm:shadow-[5px_5px_0px_#111111] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 overflow-hidden relative min-h-[140px] sm:min-h-[170px]">
+      <div className="lg:col-span-6 bg-[#DDD6FE] border-[2.5px] sm:border-[3px] border-[#111111] rounded-2xl p-4 sm:p-6 shadow-[3px_3px_0px_#111111] sm:shadow-[5px_5px_0px_#111111] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 overflow-hidden relative min-h-[140px] sm:min-h-[170px] w-full">
         <div className="w-full sm:max-w-xs z-10">
           <blockquote className="text-sm sm:text-base md:text-xl font-display font-black text-[#111111] uppercase tracking-tight leading-snug">
             "A LITTLE PROGRESS EACH DAY ADDS UP TO BIG RESULTS."
           </blockquote>
-          <div className="text-xs font-bold text-[#111111] mt-3 uppercase tracking-wider font-mono">
+          <div className="text-xs font-bold text-[#111111] mt-2 sm:mt-3 uppercase tracking-wider font-mono">
             — UNKNOWN
           </div>
         </div>
 
         {/* Real Manga discipline artwork asset */}
-        <div className="w-40 sm:w-52 h-32 sm:h-36 border-2 border-[#111111] rounded-xl overflow-hidden bg-white shadow-[3px_3px_0px_#111111] shrink-0 relative ml-2 group">
+        <div className="w-full sm:w-52 h-28 sm:h-36 border-2 border-[#111111] rounded-xl overflow-hidden bg-white shadow-[2px_2px_0px_#111111] sm:shadow-[3px_3px_0px_#111111] shrink-0 relative group">
           <img
             src="/discipline-builds-freedom.jpg"
             alt="Discipline Builds Freedom"

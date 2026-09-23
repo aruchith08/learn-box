@@ -47,7 +47,7 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ onPlayVideo 
   };
 
   return (
-    <div className="bg-white border-[3px] border-[#111111] rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_#111111]">
+    <div className="bg-white border-[2.5px] sm:border-[3px] border-[#111111] rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#111111] sm:shadow-[4px_4px_0px_#111111]">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-display font-black uppercase tracking-tight text-[#111111] flex items-center gap-1.5">

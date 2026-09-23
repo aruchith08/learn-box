@@ -53,7 +53,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ onPlayVideo }) => {
   };
 
   return (
-    <div className="bg-white border-[3px] border-[#111111] rounded-2xl p-5 shadow-[4px_4px_0px_#111111] flex flex-col justify-between h-full">
+    <div className="bg-white border-[2.5px] sm:border-[3px] border-[#111111] rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#111111] sm:shadow-[4px_4px_0px_#111111] flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-display font-black uppercase tracking-tight text-[#111111] flex items-center gap-2">

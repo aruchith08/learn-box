@@ -37,7 +37,7 @@ export const WeeklyChart: React.FC = () => {
   });
 
   return (
-    <div className="bg-white border-[3px] border-[#111111] rounded-2xl p-5 shadow-[4px_4px_0px_#111111] flex flex-col justify-between h-full">
+    <div className="bg-white border-[2.5px] sm:border-[3px] border-[#111111] rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#111111] sm:shadow-[4px_4px_0px_#111111] flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="w-4 h-4 text-[#111111] stroke-[2.5]" />

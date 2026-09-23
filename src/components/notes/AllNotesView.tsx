@@ -40,9 +40,9 @@ export const AllNotesView: React.FC<AllNotesViewProps> = ({ onPlayVideo }) => {
   };
 
   return (
-    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto font-sans">
+    <div className="px-3.5 sm:px-6 py-4 max-w-[1600px] mx-auto font-sans w-full box-border">
       {/* Header Banner */}
-      <div className="bg-white border-3 border-black rounded-xl p-6 shadow-[5px_5px_0px_#000] mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border-2 sm:border-3 border-black rounded-xl p-4 sm:p-6 shadow-[3px_3px_0px_#000] sm:shadow-[5px_5px_0px_#000] mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="bg-[#DDD6FE] text-purple-900 text-[10px] font-black px-2 py-0.5 rounded border border-black uppercase">
