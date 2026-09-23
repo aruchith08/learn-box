@@ -46,13 +46,14 @@ export const MetricCards: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
       {cards.map((card, idx) => {
         const Icon = card.icon;
+        const isLastOnTwoCol = idx === cards.length - 1;
         return (
           <div
             key={idx}
-            className={`${card.bg} border-[3px] border-[#111111] rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#111111] transition-all flex flex-col justify-between min-h-[120px]`}
+            className={`${card.bg} ${isLastOnTwoCol ? 'col-span-2 md:col-span-1' : 'col-span-1'} border-[2.5px] sm:border-[3px] border-[#111111] rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-[3px_3px_0px_#111111] sm:shadow-[4px_4px_0px_#111111] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#111111] transition-all flex flex-col justify-between min-h-[105px] sm:min-h-[120px]`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] sm:text-xs font-mono font-black tracking-wider text-[#111111] uppercase">

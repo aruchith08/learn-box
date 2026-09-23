@@ -11,6 +11,7 @@ import {
   Settings,
   ArrowUpRight,
   IconProps,
+  X,
 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { TabType } from '../../types/focusLearn';
@@ -62,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {/* Brand Header */}
-        <div className="p-6 border-b-2 border-[#242429]">
+        <div className="p-6 border-b-2 border-[#242429] flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             {/* Stylized Hexagon/Cube Logo matching screenshot */}
             <div className="w-8 h-8 flex items-center justify-center shrink-0">
@@ -85,6 +86,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Close button visible only on mobile screens */}
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="lg:hidden p-1.5 rounded-lg bg-[#242429] text-gray-300 hover:text-white border border-[#3A3A42] cursor-pointer"
+              title="Close Navigation"
+            >
+              <X className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Links */}

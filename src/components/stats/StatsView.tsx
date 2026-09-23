@@ -34,7 +34,7 @@ export const StatsView: React.FC = () => {
   const activePlaylists = playlists.filter((p) => (p.completedVideos || 0) > 0).length || Math.min(3, playlists.length);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto font-sans">
+    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Banner */}
       <div className="bg-white border-3 border-black rounded-xl p-6 shadow-[5px_5px_0px_#000] mb-6">
         <div className="flex items-center gap-2 mb-1">

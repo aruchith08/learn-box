@@ -82,7 +82,7 @@ export const GlobalTrackerView: React.FC<GlobalTrackerViewProps> = ({ onPlayVide
   ];
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto font-sans">
+    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Banner */}
       <div className="bg-white border-3 border-black rounded-xl p-6 shadow-[5px_5px_0px_#000] mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">

@@ -80,7 +80,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
   };
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto font-sans">
+    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto font-sans">
       {/* Top Back Navigation */}
       <div className="mb-4">
         <button

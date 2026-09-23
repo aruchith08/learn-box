@@ -172,15 +172,15 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   }
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto font-sans">
+    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto font-sans">
       {/* Top Navigation Row */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 bg-white border-2 border-black px-3.5 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 text-xs font-black uppercase tracking-wider cursor-pointer"
+          className="flex items-center gap-2 bg-white border-2 border-black px-2.5 sm:px-3.5 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 text-xs font-black uppercase tracking-wider cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
-          <span>Back to {currentPlaylist ? currentPlaylist.title : 'Catalog'}</span>
+          <span className="truncate max-w-[150px] sm:max-w-none">Back to {currentPlaylist ? currentPlaylist.title : 'Catalog'}</span>
         </button>
 
         <div className="flex items-center gap-2">

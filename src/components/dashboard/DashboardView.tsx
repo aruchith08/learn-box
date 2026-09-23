@@ -21,7 +21,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenAddModal,
 }) => {
   return (
-    <div className="p-6 max-w-[1600px] mx-auto font-sans">
+    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto font-sans">
       {/* 1. Canvas Welcome Greeting & Quote Card */}
       <WelcomeBanner />
 

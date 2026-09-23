@@ -3,6 +3,7 @@ import { LearningProvider, useLearning } from './context/LearningContext';
 import { useAuth } from './context/AuthContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { VideoPlayerView } from './components/player/VideoPlayerView';
 import { PlaylistsView } from './components/playlists/PlaylistsView';
@@ -188,9 +189,14 @@ function MainApp() {
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
           {renderContent()}
         </main>
+
+        {/* Mobile Quick-Access Bottom Bar (hidden when playing a video) */}
+        {!activeVideoId && (
+          <MobileBottomNav onOpenAddModal={() => setIsAddModalOpen(true)} />
+        )}
       </div>
 
       {/* 3. Global Action & Utility Modals */}
