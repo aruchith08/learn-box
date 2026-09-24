@@ -118,7 +118,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                       </span>
                     </div>
                     <span className="text-[10px] font-mono font-bold text-gray-500">
-                      {pl.videos.length} videos
+                      {pl.videos?.length || 0} videos
                     </span>
                   </div>
                 ))}

@@ -24,7 +24,7 @@ function resolveApiKey(): string {
 }
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDMbduqvx_4zcnZ17jR22mYleUrZyZbsHc",
+  apiKey: resolveApiKey() || "AIzaSyDMbduqvx_4zcnZ17jR22mYleUrZyZbsHc",
   authDomain: "learn-box-1c4ae.firebaseapp.com",
   projectId: "learn-box-1c4ae",
   storageBucket: "learn-box-1c4ae.firebasestorage.app",

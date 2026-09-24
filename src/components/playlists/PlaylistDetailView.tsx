@@ -67,13 +67,15 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
     return matchesSearch;
   });
 
-  const handleMoveVideo = (index: number, direction: 'up' | 'down') => {
-    const newIdx = direction === 'up' ? index - 1 : index + 1;
+  const handleMoveVideo = (videoId: string, direction: 'up' | 'down') => {
+    const originalIdx = playlistVideos.findIndex((v) => v.id === videoId);
+    if (originalIdx === -1) return;
+    const newIdx = direction === 'up' ? originalIdx - 1 : originalIdx + 1;
     if (newIdx < 0 || newIdx >= playlistVideos.length) return;
 
     const newOrder = [...playlistVideos];
-    const temp = newOrder[index];
-    newOrder[index] = newOrder[newIdx];
+    const temp = newOrder[originalIdx];
+    newOrder[originalIdx] = newOrder[newIdx];
     newOrder[newIdx] = temp;
 
     reorderPlaylistVideos(playlist.id, newOrder.map((v) => v.id));
@@ -187,6 +189,10 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
               const prog = progress[video.id];
               const isCompleted = prog?.status === 'completed' || (prog?.status as string) === 'COMPLETED';
               const bookmarked = isBookmarked(video.id);
+              const originalIdx = playlistVideos.findIndex((v) => v.id === video.id);
+              const isFirst = originalIdx <= 0;
+              const isLast = originalIdx === -1 || originalIdx >= playlistVideos.length - 1;
+              const displayNumber = originalIdx !== -1 ? originalIdx + 1 : idx + 1;
 
               return (
                 <div
@@ -200,16 +206,16 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
                     {/* Reorder Up/Down */}
                     <div className="flex flex-col gap-0.5 shrink-0 mt-0.5">
                       <button
-                        disabled={idx === 0}
-                        onClick={() => handleMoveVideo(idx, 'up')}
+                        disabled={isFirst}
+                        onClick={() => handleMoveVideo(video.id, 'up')}
                         className="p-0.5 hover:bg-gray-200 rounded disabled:opacity-20 cursor-pointer"
                         title="Move Up"
                       >
                         <ChevronUp className="w-3.5 h-3.5 text-black" />
                       </button>
                       <button
-                        disabled={idx === playlistVideos.length - 1}
-                        onClick={() => handleMoveVideo(idx, 'down')}
+                        disabled={isLast}
+                        onClick={() => handleMoveVideo(video.id, 'down')}
                         className="p-0.5 hover:bg-gray-200 rounded disabled:opacity-20 cursor-pointer"
                         title="Move Down"
                       >
@@ -219,7 +225,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
 
                     {/* Index */}
                     <span className="w-7 h-7 bg-[#F4F0EA] border-2 border-black rounded flex items-center justify-center font-mono text-xs font-black shrink-0 mt-1 shadow-[1px_1px_0px_#000]">
-                      {idx + 1}
+                      {displayNumber}
                     </span>
 
                     {/* Thumbnail */}

@@ -21,6 +21,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setUserName(settings.userName || 'Learner');
+      setAutoPlayNext(settings.autoPlayNext ?? true);
+      setResumePosition(settings.resumePosition ?? true);
+      setCompletionThreshold(settings.markCompleteThreshold || 90);
+    }
+  }, [isOpen, settings]);
+
   if (!isOpen) return null;
 
   const handleSave = (e: React.FormEvent) => {
@@ -66,7 +75,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   };
 
   const handleClearCache = () => {
-    if (confirm('Clear local cache and re-synchronize? Your progress will remain saved.')) {
+    if (confirm('Clear local cache and re-synchronize? If signed in, cloud progress will be freshly fetched from Firestore.')) {
+      if (currentUser?.uid) {
+        localStorage.removeItem(dbService.getStorageKey(currentUser.uid));
+      }
+      sessionStorage.clear();
       window.location.reload();
     }
   };

@@ -19,11 +19,12 @@ export interface CachedAuthUser {
 
 export type CurrentUserType = User | CachedAuthUser;
 
-const AUTH_CACHE_KEY = 'arh-dsa-auth-session';
+const AUTH_CACHE_KEY = 'focus-learn-auth-session';
+const LEGACY_AUTH_CACHE_KEY = 'arh-dsa-auth-session';
 
 function loadCachedSession(): CachedAuthUser | null {
   try {
-    const raw = localStorage.getItem(AUTH_CACHE_KEY);
+    const raw = localStorage.getItem(AUTH_CACHE_KEY) || localStorage.getItem(LEGACY_AUTH_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed.uid === 'string' && parsed.uid.length > 0) {
@@ -45,8 +46,10 @@ function saveCachedSession(user: User | CachedAuthUser | null) {
         photoURL: user.photoURL || null,
       };
       localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(data));
+      localStorage.removeItem(LEGACY_AUTH_CACHE_KEY);
     } else {
       localStorage.removeItem(AUTH_CACHE_KEY);
+      localStorage.removeItem(LEGACY_AUTH_CACHE_KEY);
     }
   } catch (e) {
     console.warn('Error saving cached auth session:', e);

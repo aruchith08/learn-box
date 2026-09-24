@@ -485,6 +485,11 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ? 'in_progress'
           : 'unstarted';
 
+        const lastWatchedTime = existing?.lastWatchedAt ? new Date(existing.lastWatchedAt).getTime() : 0;
+        // Count as a new session only on first view or if >30 minutes have elapsed since last watch
+        const isNewSession = !existing || !existing.sessionsCount || (Date.now() - lastWatchedTime > 30 * 60 * 1000);
+        const resolvedSessionsCount = (existing?.sessionsCount || 0) + (isNewSession ? 1 : 0);
+
         const updatedProgress = {
           ...prev.progress,
           [videoId]: {
@@ -496,7 +501,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             duration,
             lastWatchedAt: new Date().toISOString(),
             completedAt: isNowComplete ? existing?.completedAt || new Date().toISOString() : undefined,
-            sessionsCount: (existing?.sessionsCount || 0) + 1,
+            sessionsCount: resolvedSessionsCount,
           },
         };
 
@@ -550,7 +555,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             duration: existing?.duration || 1800,
             lastWatchedAt: new Date().toISOString(),
             completedAt: nextDone ? new Date().toISOString() : undefined,
-            sessionsCount: (existing?.sessionsCount || 0) + 1,
+            sessionsCount: existing?.sessionsCount || (nextDone ? 1 : 0),
           },
         };
 

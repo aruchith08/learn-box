@@ -25,7 +25,21 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
-    localStorage.clear();
+    // Only remove Focus Learn / Learn Box specific keys
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (
+        key &&
+        (key.startsWith('focus_learn_') ||
+          key.startsWith('learn-box') ||
+          key.includes('auth-session'))
+      ) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+    sessionStorage.clear();
     window.location.reload();
   };
 
