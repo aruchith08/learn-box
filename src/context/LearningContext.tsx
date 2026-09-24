@@ -53,6 +53,7 @@ interface LearningContextType {
   // Computed metrics
   metrics: Metrics;
   continueWatchingVideo: Video | null;
+  lastWatchedVideo: Video | null;
 
   // Actions
   playVideo: (videoId: string, playlistId?: string | null) => void;
@@ -327,6 +328,31 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     return null;
   }, [allVideos, dbState.progress]);
+
+  // Last watched video across all progress (either in-progress or completed)
+  const lastWatchedVideo: Video | null = useMemo(() => {
+    if (continueWatchingVideo) return continueWatchingVideo;
+
+    let latest: Video | null = null;
+    let latestTime = 0;
+
+    for (let i = 0; i < allVideos.length; i++) {
+      const v = allVideos[i];
+      const p = dbState.progress[v.id];
+      if (p) {
+        const timeStr = p.lastWatchedAt || p.completedAt;
+        if (timeStr) {
+          const t = new Date(timeStr).getTime();
+          if (t > latestTime) {
+            latestTime = t;
+            latest = v;
+          }
+        }
+      }
+    }
+
+    return latest;
+  }, [allVideos, continueWatchingVideo, dbState.progress]);
 
   // Actions
   const playVideo = useCallback((videoId: string, playlistId?: string | null) => {
@@ -937,6 +963,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         metrics,
         continueWatchingVideo,
+        lastWatchedVideo,
 
         playVideo,
         updateVideoProgress,

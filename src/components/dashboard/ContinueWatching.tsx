@@ -7,9 +7,32 @@ interface ContinueWatchingProps {
 }
 
 export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ onPlayVideo }) => {
-  const { continueWatchingVideo, progress, allVideos } = useLearning();
+  const { continueWatchingVideo, lastWatchedVideo, playlists, progress, allVideos } = useLearning();
 
-  if (!continueWatchingVideo) {
+  const targetVideo = React.useMemo(() => {
+    if (continueWatchingVideo) return continueWatchingVideo;
+
+    if (lastWatchedVideo) {
+      if (lastWatchedVideo.playlistId) {
+        const pl = playlists.find((p) => p.id === lastWatchedVideo.playlistId);
+        if (pl && pl.videos) {
+          const idx = pl.videos.findIndex((v) => v.id === lastWatchedVideo.id);
+          if (idx !== -1) {
+            const nextUncompleted = pl.videos.slice(idx + 1).find((v) => {
+              const p = progress[v.id];
+              return !p || (p.status !== 'completed' && (p.status as string) !== 'COMPLETED');
+            });
+            if (nextUncompleted) return nextUncompleted;
+          }
+        }
+      }
+      return lastWatchedVideo;
+    }
+
+    return null;
+  }, [continueWatchingVideo, lastWatchedVideo, playlists, progress]);
+
+  if (!targetVideo) {
     return (
       <div className="bg-white border-[3px] border-[#111111] rounded-2xl p-5 shadow-[4px_4px_0px_#111111]">
         <h2 className="text-sm font-display font-black uppercase tracking-tight text-[#111111] mb-2">
@@ -35,9 +58,9 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ onPlayVideo 
     );
   }
 
-  const targetVideo = continueWatchingVideo;
   const prog = progress[targetVideo.id];
-  const percent = prog ? prog.percent || prog.progressPercentage || 0 : 0;
+  const isDone = prog?.status === 'completed' || (prog?.status as string) === 'COMPLETED';
+  const percent = isDone ? 100 : prog ? prog.percent || prog.progressPercentage || 0 : 0;
   const currentTime = prog?.currentTime || 0;
 
   const formatSecs = (sec: number) => {
@@ -54,7 +77,7 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ onPlayVideo 
           CONTINUE WATCHING
         </h2>
         <button
-          onClick={() => onPlayVideo(continueWatchingVideo.id)}
+          onClick={() => onPlayVideo(targetVideo.id)}
           className="text-[#111111] hover:translate-x-0.5 transition-transform cursor-pointer"
           title="Watch Now"
         >
@@ -74,13 +97,23 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ onPlayVideo 
             alt={targetVideo.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          {/* Top-left IN PROGRESS badge */}
-          <div className="absolute top-1 left-1 bg-[#FECDD3] text-[#111111] font-mono font-black text-[8px] px-1.5 py-0.5 rounded border border-[#111111] uppercase tracking-tight shadow-[1px_1px_0px_#111111]">
-            IN PROGRESS
+          {/* Top-left status badge */}
+          <div
+            className={`absolute top-1 left-1 text-[#111111] font-mono font-black text-[8px] px-1.5 py-0.5 rounded border border-[#111111] uppercase tracking-tight shadow-[1px_1px_0px_#111111] ${
+              isDone
+                ? 'bg-[#A7F3D0]'
+                : currentTime > 0
+                ? 'bg-[#FECDD3]'
+                : 'bg-[#FFE600]'
+            }`}
+          >
+            {isDone ? 'COMPLETED' : currentTime > 0 ? 'IN PROGRESS' : 'NEXT LESSON'}
           </div>
           {/* Bottom-right timestamp */}
           <div className="absolute bottom-1 right-1 bg-black/90 text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded">
-            {formatSecs(currentTime)}
+            {currentTime > 0
+              ? formatSecs(currentTime)
+              : targetVideo.durationFormatted || (typeof targetVideo.duration === 'string' ? targetVideo.duration : '25:00')}
           </div>
         </div>
 
