@@ -33,23 +33,39 @@
   }
 }
 
-/* Custom brutalist scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Custom brutalist scrollbars — desktop only */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F4F1EB;
+    border-left: 2px solid #111111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #111111;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #FFE600;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: #F4F1EB;
-  border-left: 2px solid #111111;
-}
+/* Hide scrollbar on mobile */
+@media (max-width: 1023px) {
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE / Edge */
+  }
 
-::-webkit-scrollbar-thumb {
-  background: #111111;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #FFE600;
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome / Safari / WebKit */
+  }
 }
 
 /* YouTube IFrame API injects an <iframe> that defaults to fixed pixel sizes.
