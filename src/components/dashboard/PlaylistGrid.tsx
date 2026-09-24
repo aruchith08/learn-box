@@ -47,11 +47,17 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
       return { icon: BarChart3, bg: 'bg-[#BAE6FD]', label: '#5' };
     }
     if (lower.includes('ai agent') || lower.includes('building ai')) {
-      return { icon: Bot, bg: 'bg-[#FECDD3]', label: '#6' };
+      return { icon: Bot, bg: 'bg-[#FECACA]', label: '#6' };
+    }
+    if (lower.includes('django')) {
+      return { icon: Laptop, bg: 'bg-[#BBF7D0]', label: '#7' };
+    }
+    if (lower.includes('fastapi')) {
+      return { icon: Rocket, bg: 'bg-[#99F6E4]', label: '#8' };
     }
 
-    const defaultColors = ['bg-[#FECDD3]', 'bg-[#A7F3D0]', 'bg-[#DDD6FE]', 'bg-[#FEF08A]', 'bg-[#BAE6FD]', 'bg-[#FECDD3]'];
-    const defaultIcons = [Laptop, Terminal, Rocket, Coffee, BarChart3, Bot];
+    const defaultColors = ['bg-[#FECDD3]', 'bg-[#A7F3D0]', 'bg-[#DDD6FE]', 'bg-[#FEF08A]', 'bg-[#BAE6FD]', 'bg-[#FECACA]', 'bg-[#BBF7D0]', 'bg-[#99F6E4]'];
+    const defaultIcons = [Laptop, Terminal, Rocket, Coffee, BarChart3, Bot, Laptop, Rocket];
     return {
       icon: defaultIcons[index % defaultIcons.length],
       bg: defaultColors[index % defaultColors.length],
@@ -59,8 +65,8 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
     };
   };
 
-  // Show up to 6 on the dashboard grid
-  const displayPlaylists = playlists.slice(0, 6);
+  // Show up to 8 on the dashboard grid
+  const displayPlaylists = playlists.slice(0, 8);
 
   return (
     <div className="mb-6">

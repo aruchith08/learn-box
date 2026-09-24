@@ -83,6 +83,45 @@ export const dbService = {
       state.playlistVideos = state.playlistVideos.filter((pv) => !REMOVED_PLAYLIST_IDS.has(pv.playlistId));
     }
 
+    // Ensure all default initial playlists and their videos exist in user state
+    if (!state.playlists) state.playlists = [];
+    if (!state.videos) state.videos = [];
+    if (!state.playlistVideos) state.playlistVideos = [];
+
+    const currentPlaylistIds = new Set(state.playlists.map((p) => p.id));
+    const existingVideoIds = new Set(state.videos.map((v) => v.id));
+    const existingPVKeys = new Set(state.playlistVideos.map((pv) => `${pv.playlistId}:${pv.videoId}`));
+
+    INITIAL_PLAYLISTS.forEach((initPl) => {
+      if (!currentPlaylistIds.has(initPl.id) && !REMOVED_PLAYLIST_IDS.has(initPl.id)) {
+        state.playlists.push({
+          ...initPl,
+          completedVideos: 0,
+          progressPercentage: 0,
+        });
+        currentPlaylistIds.add(initPl.id);
+
+        const initVidsForPl = INITIAL_VIDEOS.filter((v) => v.playlistId === initPl.id);
+        initVidsForPl.forEach((v) => {
+          if (!existingVideoIds.has(v.id)) {
+            state.videos.push(v);
+            existingVideoIds.add(v.id);
+          }
+          const pvKey = `${initPl.id}:${v.id}`;
+          if (!existingPVKeys.has(pvKey)) {
+            state.playlistVideos.push({
+              id: `pv-${initPl.id}-${v.id}`,
+              playlistId: initPl.id,
+              videoId: v.id,
+              position: typeof v.position === 'number' ? v.position : 0,
+              createdAt: v.createdAt || new Date().toISOString(),
+            });
+            existingPVKeys.add(pvKey);
+          }
+        });
+      }
+    });
+
     let order = state.playlistOrder;
     if (!order || !Array.isArray(order) || order.length === 0) {
       order = (state.playlists || []).map((p) => p.id);
