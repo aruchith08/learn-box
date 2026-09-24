@@ -71,16 +71,12 @@ export const AuthModal: React.FC = () => {
         {/* Top Brand Header Bar */}
         <div className="flex items-center justify-between border-b-[3px] border-[#111111] bg-[#111111] px-5 py-3.5 text-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5 text-white fill-none stroke-current stroke-[2.5]"
-              >
-                <polygon points="12 2 2 8.5 2 15.5 12 22 22 15.5 22 8.5 12 2" />
-                <line x1="12" y1="22" x2="12" y2="12" />
-                <line x1="2" y1="8.5" x2="12" y2="12" />
-                <line x1="22" y1="8.5" x2="12" y2="12" />
-              </svg>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              <img
+                src="/learnbox-cube.png"
+                alt="LEARNBOX"
+                className="w-5 h-5 object-contain"
+              />
             </div>
             <div className="text-xs font-display font-black tracking-wider text-white uppercase">
               <span>LEARNBOX AUTHENTICATION</span>

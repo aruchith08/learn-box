@@ -77,15 +77,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Logo & Brand text */}
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-8 h-8 flex items-center justify-center shrink-0" title="LEARNBOX">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-8 h-8 text-white fill-none stroke-current stroke-[2.5]"
-              >
-                <polygon points="12 2 2 8.5 2 15.5 12 22 22 15.5 22 8.5 12 2" />
-                <line x1="12" y1="22" x2="12" y2="12" />
-                <line x1="2" y1="8.5" x2="12" y2="12" />
-                <line x1="22" y1="8.5" x2="12" y2="12" />
-              </svg>
+              <img
+                src="/learnbox-cube.png"
+                alt="LEARNBOX"
+                className="w-8 h-8 object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
+              />
             </div>
             <div className={`min-w-0 overflow-hidden ${isCollapsed ? 'block lg:hidden' : 'block'}`}>
               <div className="font-display font-black text-2xl tracking-wider text-white uppercase leading-none truncate">
