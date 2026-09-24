@@ -114,6 +114,15 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     icon: '/geeksforgeeks-logo.png',
     bgColor: '#D1FAE5',
   },
+  {
+    id: 'gfg-competitive-programming',
+    title: 'Competitive Programming',
+    platform: 'GeeksforGeeks',
+    url: 'https://www.geeksforgeeks.org/dsa/competitive-programming-cp-handbook-with-complete-roadmap/',
+    domain: 'geeksforgeeks.org',
+    icon: '/geeksforgeeks-logo.png',
+    bgColor: '#D1FAE5',
+  },
 
   // Unstop
   {
@@ -185,5 +194,17 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     domain: 'dsa.apnacollege.in',
     icon: '/apna-college-logo.png',
     bgColor: '#FFFBEB',
+  },
+
+  // LeetCode
+  {
+    id: 'leetcode-striver-sde-sheet',
+    title: 'Striver SDE Sheet',
+    platform: 'LeetCode',
+    url: 'https://leetcode.com/problem-list/eeudwo2i/',
+    domain: 'leetcode.com',
+    icon: '/leetcode-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=leetcode.com&sz=128',
+    bgColor: '#FEF3C7', // Pastel Amber
   },
 ];
