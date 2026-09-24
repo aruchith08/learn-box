@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   FolderClosed,
   Film,
-  CheckSquare2,
+  LayoutGrid,
   FileText,
   IconProps,
 } from '../common/focusIcons';
@@ -21,7 +21,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = () => {
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
     { id: 'playlists', label: 'Playlists', icon: FolderClosed },
     { id: 'my-videos', label: 'Videos', icon: Film },
-    { id: 'tracker', label: 'Tracker', icon: CheckSquare2 },
+    { id: 'catalog', label: 'Catalog', icon: LayoutGrid },
     { id: 'notes', label: 'Notes', icon: FileText },
   ];
 
