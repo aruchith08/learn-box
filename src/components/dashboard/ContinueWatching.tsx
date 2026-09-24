@@ -123,7 +123,7 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ onPlayVideo 
             {targetVideo.title}
           </h3>
           <p className="text-[10px] font-semibold text-gray-500 mt-0.5 truncate">
-            {targetVideo.playlistTitle || targetVideo.category || 'Java + DSA in 30 Days'}
+            {targetVideo.playlistTitle || playlists.find((p) => p.id === targetVideo.playlistId)?.title || targetVideo.category || 'Curriculum'}
           </p>
 
           {/* Green Progress Bar with Percentage */}

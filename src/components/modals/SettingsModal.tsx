@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings, X, Download, Upload, RotateCcw, Check } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
+import { useAuth } from '../../context/AuthContext';
 import { dbService } from '../../services/dbService';
 
 interface SettingsModalProps {
@@ -10,6 +11,8 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { settings, updateSettings, resetToDefaults } = useLearning();
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.uid || 'guest';
 
   const [userName, setUserName] = useState(settings.userName || 'Learner');
   const [autoPlayNext, setAutoPlayNext] = useState(settings.autoPlayNext ?? true);
@@ -33,7 +36,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   };
 
   const handleExportBackup = () => {
-    const raw = localStorage.getItem(`focus_learn_db_v2_guest`) || localStorage.getItem(`focus_learn_db_v2_${settings.userName}`) || '{}';
+    const key = dbService.getStorageKey(currentUserId);
+    const raw = localStorage.getItem(key) || '{}';
     const blob = new Blob([raw], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -52,7 +56,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       const json = event.target?.result as string;
       const validated = dbService.validateAndParseBackup(json);
       if (validated) {
-        dbService.saveLocalUserData('guest', validated);
+        dbService.saveLocalUserData(currentUserId, validated);
         window.location.reload();
       } else {
         alert('Invalid backup file. Please select a valid FOCUS LEARN JSON backup.');
