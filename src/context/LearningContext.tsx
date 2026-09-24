@@ -24,6 +24,9 @@ export interface Metrics {
   totalBookmarks: number;
   totalNotes: number;
   totalWatchHours: number;
+  streakDays: number;
+  longestStreakDays: number;
+  studyDates: string[];
 }
 
 interface LearningContextType {
@@ -281,19 +284,118 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const total = allVideos.length;
     let completed = 0;
     let inProgress = 0;
+    let totalSeconds = 0;
 
     allVideos.forEach((v) => {
       const p = dbState.progress[v.id];
       const status = p?.status as string;
       if (status === 'completed' || status === 'COMPLETED') {
         completed++;
+        // If currentTime was recorded and > 0, use it; otherwise fallback to video duration
+        const dur =
+          typeof p?.duration === 'number' && p.duration > 0
+            ? p.duration
+            : typeof v.duration === 'number' && v.duration > 0
+            ? v.duration
+            : 1500;
+        totalSeconds += typeof p?.currentTime === 'number' && p.currentTime > 0 ? p.currentTime : dur;
       } else if (status === 'in_progress' || status === 'IN_PROGRESS') {
         inProgress++;
+        if (typeof p?.currentTime === 'number' && p.currentTime > 0) {
+          totalSeconds += p.currentTime;
+        } else {
+          totalSeconds += 600;
+        }
       }
     });
 
     const unstarted = Math.max(0, total - completed - inProgress);
     const overallProgress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const totalWatchHours = Math.round((totalSeconds / 3600) * 10) / 10;
+
+    // Aggregate unique dates with learning activity
+    const studyDatesSet = new Set<string>();
+
+    Object.values(dbState.progress).forEach((p) => {
+      if (p.lastWatchedAt) {
+        const d = new Date(p.lastWatchedAt);
+        if (!isNaN(d.getTime())) {
+          studyDatesSet.add(d.toLocaleDateString('en-CA'));
+        }
+      }
+      if (p.completedAt) {
+        const d = new Date(p.completedAt);
+        if (!isNaN(d.getTime())) {
+          studyDatesSet.add(d.toLocaleDateString('en-CA'));
+        }
+      }
+    });
+
+    (dbState.activity || []).forEach((act) => {
+      if (act.timestamp) {
+        const d = new Date(act.timestamp);
+        if (!isNaN(d.getTime())) {
+          studyDatesSet.add(d.toLocaleDateString('en-CA'));
+        }
+      }
+    });
+
+    (dbState.notes || []).forEach((n) => {
+      if (n.createdAt) {
+        const d = new Date(n.createdAt);
+        if (!isNaN(d.getTime())) {
+          studyDatesSet.add(d.toLocaleDateString('en-CA'));
+        }
+      }
+    });
+
+    const today = new Date();
+    const todayKey = today.toLocaleDateString('en-CA');
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayKey = yesterday.toLocaleDateString('en-CA');
+
+    // Calculate current streak
+    let currentStreak = 0;
+    let checkDate = new Date(today);
+
+    if (!studyDatesSet.has(todayKey)) {
+      if (studyDatesSet.has(yesterdayKey)) {
+        checkDate = yesterday;
+      }
+    }
+
+    if (studyDatesSet.has(checkDate.toLocaleDateString('en-CA'))) {
+      while (studyDatesSet.has(checkDate.toLocaleDateString('en-CA'))) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+    }
+
+    // Calculate historical longest streak
+    const sortedDates = Array.from(studyDatesSet).sort();
+    let longestStreak = 0;
+    let tempStreak = 0;
+    let prevDate: Date | null = null;
+
+    for (const dateStr of sortedDates) {
+      const curDate = new Date(dateStr + 'T00:00:00');
+      if (!prevDate) {
+        tempStreak = 1;
+      } else {
+        const diffDays = Math.round((curDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          tempStreak++;
+        } else if (diffDays > 1) {
+          tempStreak = 1;
+        }
+      }
+      if (tempStreak > longestStreak) {
+        longestStreak = tempStreak;
+      }
+      prevDate = curDate;
+    }
+    longestStreak = Math.max(longestStreak, currentStreak);
 
     return {
       totalVideos: total,
@@ -304,10 +406,12 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       totalPlaylists: playlists.length,
       totalBookmarks: dbState.bookmarks.length,
       totalNotes: dbState.notes.length,
-      totalWatchHours:
-        Math.round(((completed * 35 + inProgress * 15) / 60) * 10) / 10,
+      totalWatchHours,
+      streakDays: currentStreak,
+      longestStreakDays: longestStreak,
+      studyDates: Array.from(studyDatesSet),
     };
-  }, [allVideos, dbState.progress, playlists, dbState.bookmarks, dbState.notes]);
+  }, [allVideos, dbState.progress, playlists, dbState.bookmarks, dbState.notes, dbState.activity]);
 
   // Continue Watching: prioritize in-progress video with latest watch time, null if none started
   const continueWatchingVideo: Video | null = useMemo(() => {
@@ -959,7 +1063,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         bookmarks: dbState.bookmarks,
         activity: dbState.activity,
         activities: dbState.activity,
-        settings: dbState.settings,
+        settings: { ...dbState.settings, streakDays: metrics.streakDays },
 
         metrics,
         continueWatchingVideo,

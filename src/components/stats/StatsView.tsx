@@ -1,37 +1,50 @@
-import React from 'react';
-import { BarChart3, Clock, CheckCircle2, Flame, Video, BookOpen } from '../common/focusIcons';
+import React, { useMemo } from 'react';
+import { BarChart3, Clock, CheckCircle2, Flame, BookOpen } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { WeeklyChart } from '../dashboard/WeeklyChart';
 
 export const StatsView: React.FC = () => {
-  const { metrics, settings, playlists, progress, activities } = useLearning();
+  const { metrics, playlists, progress } = useLearning();
 
   // Calculate actual completed this week & this month
-  const now = Date.now();
-  const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
-  const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+  const { completedThisWeek, completedThisMonth } = useMemo(() => {
+    const now = Date.now();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
 
-  let completedThisWeek = 0;
-  let completedThisMonth = 0;
+    let weekCount = 0;
+    let monthCount = 0;
 
-  Object.values(progress).forEach((p) => {
-    if (p.completedAt) {
-      const t = new Date(p.completedAt).getTime();
-      if (t >= oneWeekAgo) completedThisWeek++;
-      if (t >= oneMonthAgo) completedThisMonth++;
-    } else if (p.status === 'completed' || (p.status as string) === 'COMPLETED') {
-      completedThisMonth++;
-    }
-  });
+    Object.values(progress).forEach((p) => {
+      const isDone = p.status === 'completed' || (p.status as string) === 'COMPLETED';
+      if (isDone) {
+        const timeStr = p.completedAt || p.lastWatchedAt;
+        if (timeStr) {
+          const t = new Date(timeStr).getTime();
+          if (t >= oneWeekAgo) weekCount++;
+          if (t >= oneMonthAgo) monthCount++;
+        } else {
+          // If no timestamp, count towards month
+          monthCount++;
+        }
+      }
+    });
 
-  if (completedThisWeek === 0 && metrics.completedVideos > 0) {
-    completedThisWeek = Math.min(12, metrics.completedVideos);
-  }
-  if (completedThisMonth === 0 && metrics.completedVideos > 0) {
-    completedThisMonth = metrics.completedVideos;
-  }
+    return {
+      completedThisWeek: weekCount,
+      completedThisMonth: monthCount,
+    };
+  }, [progress]);
 
-  const activePlaylists = playlists.filter((p) => (p.completedVideos || 0) > 0).length || Math.min(3, playlists.length);
+  // Real active playlists count (any playlist where user has started or completed a video)
+  const activePlaylists = useMemo(() => {
+    return playlists.filter((pl) => {
+      return (pl.videos || []).some((v) => {
+        const p = progress[v.id];
+        return p && (p.status === 'in_progress' || p.status === 'completed' || (p.status as string) === 'COMPLETED');
+      });
+    }).length;
+  }, [playlists, progress]);
 
   return (
     <div className="px-3.5 sm:px-6 py-4 max-w-[1600px] mx-auto font-sans w-full box-border">
@@ -58,10 +71,10 @@ export const StatsView: React.FC = () => {
             <Flame className="w-5 h-5 text-orange-600 fill-orange-500" />
           </div>
           <div className="text-3xl font-black text-black font-mono">
-            {settings.streakDays} Days
+            {metrics.streakDays} {metrics.streakDays === 1 ? 'Day' : 'Days'}
           </div>
           <p className="text-xs font-bold text-gray-700 mt-1">
-            Longest streak: {Math.max(settings.streakDays, 7)} days
+            Longest streak: {metrics.longestStreakDays} {metrics.longestStreakDays === 1 ? 'day' : 'days'}
           </p>
         </div>
 
