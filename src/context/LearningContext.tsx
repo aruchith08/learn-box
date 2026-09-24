@@ -181,11 +181,24 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [currentUserId]
   );
 
-  // Canonical videos enriched with metadata
+  // Canonical videos enriched with metadata (O(N) indexed with Map for fast resolution)
   const allVideos: Video[] = useMemo(() => {
+    const pvByVideoId = new Map<string, PlaylistVideo>();
+    for (let i = 0; i < dbState.playlistVideos.length; i++) {
+      const pv = dbState.playlistVideos[i];
+      if (!pvByVideoId.has(pv.videoId)) {
+        pvByVideoId.set(pv.videoId, pv);
+      }
+    }
+    const plById = new Map<string, Playlist>();
+    for (let i = 0; i < dbState.playlists.length; i++) {
+      const pl = dbState.playlists[i];
+      plById.set(pl.id, pl);
+    }
+
     return dbState.videos.map((v) => {
-      const pv = dbState.playlistVideos.find((p) => p.videoId === v.id);
-      const pl = pv ? dbState.playlists.find((p) => p.id === pv.playlistId) : null;
+      const pv = pvByVideoId.get(v.id);
+      const pl = pv ? plById.get(pv.playlistId) : null;
       const thumbnail =
         v.thumbnailUrl ||
         v.thumbnail ||
@@ -209,7 +222,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   }, [dbState.videos, dbState.playlistVideos, dbState.playlists]);
 
-  // Enriched playlists with dynamic calculation of completion and videos
+  // Enriched playlists with dynamic calculation of completion and videos (O(N) indexed)
   const playlists: Playlist[] = useMemo(() => {
     let orderedPlaylists = dbState.playlists;
     if (dbState.playlistOrder && dbState.playlistOrder.length > 0) {
@@ -221,20 +234,35 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
     }
 
+    const videoById = new Map<string, Video>(allVideos.map((v) => [v.id, v]));
+    const pvsByPlaylistId = new Map<string, PlaylistVideo[]>();
+    for (let i = 0; i < dbState.playlistVideos.length; i++) {
+      const pv = dbState.playlistVideos[i];
+      let list = pvsByPlaylistId.get(pv.playlistId);
+      if (!list) {
+        list = [];
+        pvsByPlaylistId.set(pv.playlistId, list);
+      }
+      list.push(pv);
+    }
+
     return orderedPlaylists.map((pl) => {
-      const pvs = dbState.playlistVideos
-        .filter((pv) => pv.playlistId === pl.id)
+      const pvs = (pvsByPlaylistId.get(pl.id) || [])
+        .slice()
         .sort((a, b) => a.position - b.position);
 
       const plVideos: Video[] = pvs
-        .map((pv) => allVideos.find((v) => v.id === pv.videoId))
+        .map((pv) => videoById.get(pv.videoId))
         .filter((v): v is Video => !!v);
 
       const total = plVideos.length;
-      const completed = plVideos.filter((v) => {
-        const p = dbState.progress[v.id];
-        return p?.status === 'completed' || (p?.status as string) === 'COMPLETED';
-      }).length;
+      let completed = 0;
+      for (let i = 0; i < plVideos.length; i++) {
+        const p = dbState.progress[plVideos[i].id];
+        if (p?.status === 'completed' || (p?.status as string) === 'COMPLETED') {
+          completed++;
+        }
+      }
       const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
       return {
