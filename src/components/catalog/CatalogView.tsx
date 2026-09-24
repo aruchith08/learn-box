@@ -119,12 +119,12 @@ export const CatalogView: React.FC = () => {
                         src={imgSrc}
                         alt={item.title}
                         onError={() => handleImageError(item.id)}
-                        className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)] transition-transform duration-200 group-hover:scale-110"
+                        className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.12)] transition-transform duration-200 group-hover:scale-105"
                         loading="lazy"
                       />
                     ) : (
                       /* Fallback Monogram if both image and fallback fail */
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-black text-white flex items-center justify-center font-display font-black text-xs sm:text-sm">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg bg-black text-white flex items-center justify-center font-display font-black text-xs sm:text-sm">
                         {item.title.charAt(0)}
                       </div>
                     )}

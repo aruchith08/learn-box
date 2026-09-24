@@ -102,7 +102,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'GeeksforGeeks',
     url: 'https://www.geeksforgeeks.org/blogs/most-asked-75-coding-problems/',
     domain: 'geeksforgeeks.org',
-    icon: 'https://www.google.com/s2/favicons?domain=geeksforgeeks.org&sz=128',
+    icon: '/geeksforgeeks-logo.png',
     bgColor: '#D1FAE5', // Pastel Emerald
   },
   {
@@ -111,7 +111,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'GeeksforGeeks',
     url: 'https://www.geeksforgeeks.org/explore',
     domain: 'geeksforgeeks.org',
-    icon: 'https://www.google.com/s2/favicons?domain=geeksforgeeks.org&sz=128',
+    icon: '/geeksforgeeks-logo.png',
     bgColor: '#D1FAE5',
   },
 
@@ -162,9 +162,9 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'Abdul Bari',
     url: 'https://abdulbari-arh.vercel.app/',
     domain: 'abdulbari-arh.vercel.app',
-    icon: 'https://abdulbari-arh.vercel.app/favicon.ico',
+    icon: '/abdul-bari-logo.png',
     fallbackIcon: '/abdul-bari.png',
-    bgColor: '#FEF08A', // Pastel Yellow
+    bgColor: '#FFFFFF', // Clean white background for dark metallic badge
   },
 
   // Apna College
@@ -174,8 +174,8 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'Apna College',
     url: 'https://dsa.apnacollege.in/',
     domain: 'dsa.apnacollege.in',
-    icon: 'https://dsa.apnacollege.in/favicon.ico',
-    bgColor: '#FFE4E6', // Pastel Rose
+    icon: '/apna-college-logo.png',
+    bgColor: '#FFFBEB', // Light warm tint to complement orange/black brand
   },
   {
     id: 'apna-dp-sheet',
@@ -183,7 +183,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'Apna College',
     url: 'https://dsa.apnacollege.in/sheet/dp-sheet',
     domain: 'dsa.apnacollege.in',
-    icon: 'https://dsa.apnacollege.in/favicon.ico',
-    bgColor: '#FFE4E6',
+    icon: '/apna-college-logo.png',
+    bgColor: '#FFFBEB',
   },
 ];
