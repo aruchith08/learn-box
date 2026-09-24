@@ -14,6 +14,7 @@ import { CalendarView } from './components/calendar/CalendarView';
 import { BookmarksView } from './components/bookmarks/BookmarksView';
 import { AllNotesView } from './components/notes/AllNotesView';
 import { StatsView } from './components/stats/StatsView';
+import { CatalogView } from './components/catalog/CatalogView';
 
 // Modals
 import { AddModal } from './components/modals/AddModal';
@@ -149,6 +150,9 @@ function MainApp() {
             onOpenAddVideo={() => setIsAddVideoModalOpen(true)}
           />
         );
+
+      case 'catalog':
+        return <CatalogView />;
 
       case 'tracker':
         return <GlobalTrackerView onPlayVideo={handlePlayVideo} />;

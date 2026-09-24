@@ -14,6 +14,7 @@ import {
   ChevronRight,
   IconProps,
   X,
+  LayoutGrid,
 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { TabType } from '../../types/focusLearn';
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
     { id: 'playlists', label: 'My Playlists', icon: FolderClosed },
     { id: 'my-videos', label: 'All Videos', icon: Film },
+    { id: 'catalog', label: 'Catalog', icon: LayoutGrid },
     { id: 'tracker', label: 'Tracker', icon: CheckSquare2 },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'notes', label: 'Notes', icon: FileText },

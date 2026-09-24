@@ -12,6 +12,7 @@ export type TabType =
   | 'my-videos'
   | 'tracker'
   | 'calendar'
+  | 'catalog'
   | 'bookmarks'
   | 'notes'
   | 'stats'
