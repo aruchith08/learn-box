@@ -41,6 +41,8 @@ export function getStorageKey(userId: string): string {
   return `${STORAGE_PREFIX}${userId || 'guest'}`;
 }
 
+let _cloudSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
 /**
  * Clean data recursively to strip unsupported undefined fields before sending to Firestore
  */
@@ -258,7 +260,7 @@ export const dbService = {
   /**
    * Save user database state locally and schedule cloud sync if logged in
    */
-  saveLocalUserData(userId: string, state: UserDatabaseState): void {
+  saveLocalUserData(userId: string, state: UserDatabaseState, immediate = false): void {
     try {
       const key = getStorageKey(userId);
       state.updatedAt = new Date().toISOString();
@@ -267,9 +269,21 @@ export const dbService = {
       console.warn('Error saving local user state:', e);
     }
 
-    // Sync to Firestore in background
+    // Sync to Firestore in background (debounced for frequent progress ticks, immediate for notes/actions)
     if (userId && userId !== 'guest' && db) {
-      this.syncToCloud(userId, state).catch((err) => console.warn('Cloud sync error:', err));
+      if (immediate) {
+        if (_cloudSyncTimer) {
+          clearTimeout(_cloudSyncTimer);
+          _cloudSyncTimer = null;
+        }
+        this.syncToCloud(userId, state).catch((err) => console.warn('Cloud sync error:', err));
+      } else {
+        if (_cloudSyncTimer) clearTimeout(_cloudSyncTimer);
+        _cloudSyncTimer = setTimeout(() => {
+          this.syncToCloud(userId, state).catch((err) => console.warn('Cloud sync error:', err));
+          _cloudSyncTimer = null;
+        }, 1500);
+      }
     }
   },
 

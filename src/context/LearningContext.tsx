@@ -580,7 +580,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           activity: newActivity,
         };
 
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -665,7 +665,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           activity: [newActivity, ...prev.activity].slice(0, 60),
         };
 
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
 
@@ -717,7 +717,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev.activity,
           ].slice(0, 60),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
 
@@ -803,7 +803,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ].slice(0, 60),
         };
 
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
 
@@ -840,7 +840,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           updatedAt: new Date().toISOString(),
         };
 
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -864,7 +864,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           playlistVideos: [...otherPvs, ...reorderedPvs],
           updatedAt: new Date().toISOString(),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -890,7 +890,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           notes: nextNotes,
           updatedAt: new Date().toISOString(),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -914,7 +914,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           playlistVideos: updatedPlaylistVideos,
           updatedAt: new Date().toISOString(),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -955,7 +955,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev.activity,
           ].slice(0, 60),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -969,7 +969,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...prev,
           notes: prev.notes.filter((n) => n.id !== noteId),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -985,7 +985,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev,
             bookmarks: prev.bookmarks.filter((b) => b.videoId !== videoId),
           };
-          dbService.saveLocalUserData(currentUserId, nextState);
+          dbService.saveLocalUserData(currentUserId, nextState, true);
           return nextState;
         }
 
@@ -1012,7 +1012,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev.activity,
           ].slice(0, 60),
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -1033,7 +1033,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...prev,
           settings: { ...prev.settings, ...newSettings },
         };
-        dbService.saveLocalUserData(currentUserId, nextState);
+        dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
     },
@@ -1043,7 +1043,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetToDefaults = useCallback(() => {
     const initialState = dbService.createInitialState(currentUserId);
     setDbState(initialState);
-    dbService.saveLocalUserData(currentUserId, initialState);
+    dbService.saveLocalUserData(currentUserId, initialState, true);
   }, [currentUserId]);
 
   return (
