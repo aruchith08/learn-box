@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import {
   FolderClosed,
-  Plus,
   Play,
   CheckCircle2,
   MoreVertical,
   Search,
-  Upload,
   ArrowRight,
   Code2,
   Terminal,
@@ -30,15 +28,13 @@ import { Playlist } from '../../types/focusLearn';
 interface PlaylistsViewProps {
   onSelectPlaylist: (playlist: Playlist) => void;
   onPlayVideo: (videoId: string) => void;
-  onOpenAddModal: () => void;
-  onOpenImportCSV: () => void;
+  onOpenAddModal?: () => void;
+  onOpenImportCSV?: () => void;
 }
 
 export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
   onSelectPlaylist,
   onPlayVideo,
-  onOpenAddModal,
-  onOpenImportCSV,
 }) => {
   const { playlists, progress, deletePlaylist, addPlaylist, reorderPlaylists } = useLearning();
   const [searchQuery, setSearchQuery] = useState('');
@@ -165,22 +161,6 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
                 <span>Reorder Playlists</span>
               </>
             )}
-          </button>
-
-          <button
-            onClick={onOpenImportCSV}
-            className="flex items-center gap-2 bg-[#F4F0EA] border-2 border-black px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#000] hover:bg-white transition-all cursor-pointer"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Import CSV</span>
-          </button>
-
-          <button
-            onClick={onOpenAddModal}
-            className="flex items-center gap-2 bg-[#FFE600] border-2 border-black px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Create Playlist</span>
           </button>
         </div>
       </div>

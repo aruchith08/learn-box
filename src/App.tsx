@@ -139,8 +139,6 @@ function MainApp() {
           <PlaylistsView
             onSelectPlaylist={handleSelectPlaylist}
             onPlayVideo={handlePlayVideo}
-            onOpenAddModal={() => setIsCreatePlaylistModalOpen(true)}
-            onOpenImportCSV={() => setIsImportCSVModalOpen(true)}
           />
         );
 
