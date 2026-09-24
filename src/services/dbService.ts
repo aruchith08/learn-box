@@ -65,14 +65,29 @@ export const dbService = {
   },
 
   /**
-   * Ensure playlistOrder array exists and playlists array matches that exact order
+   * Ensure playlistOrder array exists, playlists array matches that exact order,
+   * and any deprecated/removed default playlists are purged cleanly.
    */
   ensurePlaylistOrder(state: UserDatabaseState): UserDatabaseState {
     if (!state) return state;
+
+    // Filter out removed default playlists and their associated videos
+    const REMOVED_PLAYLIST_IDS = new Set(['pl-abdul-bari']);
+    if (state.playlists) {
+      state.playlists = state.playlists.filter((p) => !REMOVED_PLAYLIST_IDS.has(p.id));
+    }
+    if (state.videos) {
+      state.videos = state.videos.filter((v) => !v.playlistId || !REMOVED_PLAYLIST_IDS.has(v.playlistId));
+    }
+    if (state.playlistVideos) {
+      state.playlistVideos = state.playlistVideos.filter((pv) => !REMOVED_PLAYLIST_IDS.has(pv.playlistId));
+    }
+
     let order = state.playlistOrder;
     if (!order || !Array.isArray(order) || order.length === 0) {
       order = (state.playlists || []).map((p) => p.id);
     } else {
+      order = order.filter((id) => !REMOVED_PLAYLIST_IDS.has(id));
       const set = new Set(order);
       (state.playlists || []).forEach((p) => {
         if (!set.has(p.id)) {
