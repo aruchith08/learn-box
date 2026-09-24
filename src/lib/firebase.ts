@@ -7,24 +7,11 @@ import {
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Default base64 encoded client identifier to prevent GitHub automated scanner alerts
-// while guaranteeing zero runtime white-screens on Vercel or fresh clones
-const FALLBACK_B64 = 'QUl6YVN5RHp0UDFKdjdtNVIwdWsxNWZPQjBoSVMySDMwQXFHUUxv';
-
-function resolveApiKey(): string {
-  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) {
-    return import.meta.env.VITE_FIREBASE_API_KEY;
-  }
-  try {
-    if (typeof atob === 'function') {
-      return atob(FALLBACK_B64);
-    }
-  } catch {}
-  return '';
-}
-
 export const firebaseConfig = {
-  apiKey: resolveApiKey() || "AIzaSyDMbduqvx_4zcnZ17jR22mYleUrZyZbsHc",
+  apiKey:
+    typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY
+      ? import.meta.env.VITE_FIREBASE_API_KEY
+      : "AIzaSyDMbduqvx_4zcnZ17jR22mYleUrZyZbsHc",
   authDomain: "learn-box-1c4ae.firebaseapp.com",
   projectId: "learn-box-1c4ae",
   storageBucket: "learn-box-1c4ae.firebasestorage.app",
