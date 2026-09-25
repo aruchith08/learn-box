@@ -238,7 +238,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'Google',
     url: 'https://www.skills.google/',
     domain: 'skills.google',
-    icon: 'https://www.google.com/s2/favicons?domain=skills.google&sz=128',
+    icon: '/google-skills-logo.png',
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=cloud.google.com&sz=128',
     bgColor: '#F3E8FF', // Pastel Lavender
   },
