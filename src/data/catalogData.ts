@@ -286,4 +286,16 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=indiabix.com&sz=128',
     bgColor: '#DCFCE7', // Pastel Mint
   },
+
+  // Google Drive
+  {
+    id: 'gdrive-work-folder',
+    title: 'Work Folder',
+    platform: 'Google Drive',
+    url: 'https://drive.google.com/drive/folders/1yn4YUXBZat-bQBWcZazTfOS-eTZLrQk6?usp=sharing',
+    domain: 'drive.google.com',
+    icon: '/google-drive-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=drive.google.com&sz=128',
+    bgColor: '#FEF9C3', // Pastel Yellow
+  },
 ];
