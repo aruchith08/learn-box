@@ -207,4 +207,61 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=leetcode.com&sz=128',
     bgColor: '#FEF3C7', // Pastel Amber
   },
+
+  // AWS
+  {
+    id: 'aws-skill-builder',
+    title: 'Skill Builder',
+    platform: 'AWS',
+    url: 'https://explore.skillbuilder.aws/',
+    domain: 'skillbuilder.aws',
+    icon: 'https://www.google.com/s2/favicons?domain=skillbuilder.aws&sz=128',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=aws.amazon.com&sz=128',
+    bgColor: '#FFEDD5', // Pastel Peach
+  },
+
+  // Microsoft Learn
+  {
+    id: 'msft-learn-training',
+    title: 'Microsoft Learn',
+    platform: 'Microsoft',
+    url: 'https://learn.microsoft.com/en-gb/training/?source=learn',
+    domain: 'learn.microsoft.com',
+    icon: 'https://www.google.com/s2/favicons?domain=learn.microsoft.com&sz=128',
+    bgColor: '#DBEAFE', // Pastel Sky Blue
+  },
+
+  // Google Skills
+  {
+    id: 'google-skills',
+    title: 'Google Skills',
+    platform: 'Google',
+    url: 'https://www.skills.google/',
+    domain: 'skills.google',
+    icon: 'https://www.google.com/s2/favicons?domain=skills.google&sz=128',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=cloud.google.com&sz=128',
+    bgColor: '#F3E8FF', // Pastel Lavender
+  },
+
+  // Infosys Springboard
+  {
+    id: 'infosys-springboard',
+    title: 'Springboard',
+    platform: 'Infosys',
+    url: 'https://infyspringboard.onwingspan.com/web/en/page/home',
+    domain: 'infyspringboard.onwingspan.com',
+    icon: 'https://www.google.com/s2/favicons?domain=infosys.com&sz=128',
+    bgColor: '#E0F2FE', // Pastel Cyan
+  },
+
+  // Forage
+  {
+    id: 'forage-job-simulations',
+    title: 'Job Simulations',
+    platform: 'Forage',
+    url: 'https://www.theforage.com/dashboard',
+    domain: 'theforage.com',
+    icon: 'https://www.google.com/s2/favicons?domain=theforage.com&sz=128',
+    bgColor: '#CCFBF1', // Pastel Mint / Teal
+  },
 ];
