@@ -123,6 +123,15 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     icon: '/geeksforgeeks-logo.png',
     bgColor: '#D1FAE5',
   },
+  {
+    id: 'gfg-my-courses',
+    title: 'My Courses',
+    platform: 'GeeksforGeeks',
+    url: 'https://www.geeksforgeeks.org/myCourses',
+    domain: 'geeksforgeeks.org',
+    icon: '/geeksforgeeks-logo.png',
+    bgColor: '#D1FAE5',
+  },
 
   // Unstop
   {
