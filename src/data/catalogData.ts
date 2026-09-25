@@ -274,4 +274,16 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     icon: 'https://www.google.com/s2/favicons?domain=theforage.com&sz=128',
     bgColor: '#CCFBF1', // Pastel Mint / Teal
   },
+
+  // IndiaBIX
+  {
+    id: 'indiabix-aptitude',
+    title: 'IndiaBIX',
+    platform: 'IndiaBIX',
+    url: 'https://www.indiabix.com/',
+    domain: 'indiabix.com',
+    icon: '/indiabix-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=indiabix.com&sz=128',
+    bgColor: '#DCFCE7', // Pastel Mint
+  },
 ];
