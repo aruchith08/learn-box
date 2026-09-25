@@ -250,7 +250,8 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     platform: 'Infosys',
     url: 'https://infyspringboard.onwingspan.com/web/en/page/home',
     domain: 'infyspringboard.onwingspan.com',
-    icon: 'https://www.google.com/s2/favicons?domain=infosys.com&sz=128',
+    icon: '/infosys-springboard-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=infosys.com&sz=128',
     bgColor: '#E0F2FE', // Pastel Cyan
   },
 
