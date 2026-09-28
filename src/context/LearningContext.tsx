@@ -123,7 +123,8 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [dbState, setDbState] = useState<UserDatabaseState>(() => {
     try {
       const key = dbService.getStorageKey(currentUserId);
-      const raw = localStorage.getItem(key);
+      const legacyKey = dbService.getLegacyStorageKey(currentUserId);
+      const raw = localStorage.getItem(key) || localStorage.getItem(legacyKey);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && parsed.version && parsed.version >= 3) {
@@ -891,6 +892,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           updatedAt: new Date().toISOString(),
         };
         dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.deleteCustomVideoFromCloud(currentUserId, videoId).catch(console.warn);
         return nextState;
       });
     },
@@ -915,6 +917,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           updatedAt: new Date().toISOString(),
         };
         dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.deleteCustomPlaylistFromCloud(currentUserId, playlistId).catch(console.warn);
         return nextState;
       });
     },
@@ -970,6 +973,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           notes: prev.notes.filter((n) => n.id !== noteId),
         };
         dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.deleteNoteFromCloud(currentUserId, noteId).catch(console.warn);
         return nextState;
       });
     },
@@ -986,6 +990,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             bookmarks: prev.bookmarks.filter((b) => b.videoId !== videoId),
           };
           dbService.saveLocalUserData(currentUserId, nextState, true);
+          dbService.deleteBookmarkFromCloud(currentUserId, existing.id).catch(console.warn);
           return nextState;
         }
 
