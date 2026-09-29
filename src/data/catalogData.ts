@@ -311,17 +311,6 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     bgColor: '#FFEDD5', // Pastel Peach / Warm Terracotta
   },
 
-  // NeetCode
-  {
-    id: 'neetcode-practice',
-    title: 'NeetCode 150',
-    platform: 'NeetCode',
-    url: 'https://neetcode.io/practice',
-    domain: 'neetcode.io',
-    icon: 'https://www.google.com/s2/favicons?domain=neetcode.io&sz=128',
-    bgColor: '#DCFCE7', // Pastel Mint
-  },
-
   // roadmap.sh
   {
     id: 'roadmap-sh',
