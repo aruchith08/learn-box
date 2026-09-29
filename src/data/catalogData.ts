@@ -298,4 +298,16 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=drive.google.com&sz=128',
     bgColor: '#FEF9C3', // Pastel Yellow
   },
+
+  // Claude
+  {
+    id: 'claude-academy',
+    title: 'Claude Academy',
+    platform: 'Claude',
+    url: 'https://academy.claude.com/',
+    domain: 'academy.claude.com',
+    icon: '/claude-academy-logo.svg',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=academy.claude.com&sz=128',
+    bgColor: '#FFEDD5', // Pastel Peach / Warm Terracotta
+  },
 ];
