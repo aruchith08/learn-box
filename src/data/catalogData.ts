@@ -333,17 +333,6 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     bgColor: '#EDE9FE', // Pastel Lavender
   },
 
-  // ByteByteGo
-  {
-    id: 'bytebytego-system-design',
-    title: 'System Design',
-    platform: 'ByteByteGo',
-    url: 'https://bytebytego.com/',
-    domain: 'bytebytego.com',
-    icon: 'https://www.google.com/s2/favicons?domain=bytebytego.com&sz=128',
-    bgColor: '#DBEAFE', // Pastel Sky Blue
-  },
-
   // DeepLearning.AI
   {
     id: 'deeplearning-ai-courses',
