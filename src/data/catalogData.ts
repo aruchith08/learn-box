@@ -310,4 +310,81 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=academy.claude.com&sz=128',
     bgColor: '#FFEDD5', // Pastel Peach / Warm Terracotta
   },
+
+  // NeetCode
+  {
+    id: 'neetcode-practice',
+    title: 'NeetCode 150',
+    platform: 'NeetCode',
+    url: 'https://neetcode.io/practice',
+    domain: 'neetcode.io',
+    icon: 'https://www.google.com/s2/favicons?domain=neetcode.io&sz=128',
+    bgColor: '#DCFCE7', // Pastel Mint
+  },
+
+  // roadmap.sh
+  {
+    id: 'roadmap-sh',
+    title: 'Developer Roadmaps',
+    platform: 'roadmap.sh',
+    url: 'https://roadmap.sh/',
+    domain: 'roadmap.sh',
+    icon: 'https://www.google.com/s2/favicons?domain=roadmap.sh&sz=128',
+    bgColor: '#EDE9FE', // Pastel Lavender
+  },
+
+  // ByteByteGo
+  {
+    id: 'bytebytego-system-design',
+    title: 'System Design',
+    platform: 'ByteByteGo',
+    url: 'https://bytebytego.com/',
+    domain: 'bytebytego.com',
+    icon: 'https://www.google.com/s2/favicons?domain=bytebytego.com&sz=128',
+    bgColor: '#DBEAFE', // Pastel Sky Blue
+  },
+
+  // DeepLearning.AI
+  {
+    id: 'deeplearning-ai-courses',
+    title: 'AI Short Courses',
+    platform: 'DeepLearning.AI',
+    url: 'https://www.deeplearning.ai/short-courses/',
+    domain: 'deeplearning.ai',
+    icon: 'https://www.google.com/s2/favicons?domain=deeplearning.ai&sz=128',
+    bgColor: '#FEE2E2', // Pastel Rose
+  },
+
+  // Hugging Face
+  {
+    id: 'huggingface-learn',
+    title: 'Learn Hub',
+    platform: 'Hugging Face',
+    url: 'https://huggingface.co/learn',
+    domain: 'huggingface.co',
+    icon: 'https://www.google.com/s2/favicons?domain=huggingface.co&sz=128',
+    bgColor: '#FEF9C3', // Pastel Yellow
+  },
+
+  // MDN Web Docs
+  {
+    id: 'mdn-web-docs',
+    title: 'Web Docs',
+    platform: 'MDN',
+    url: 'https://developer.mozilla.org/',
+    domain: 'developer.mozilla.org',
+    icon: 'https://www.google.com/s2/favicons?domain=developer.mozilla.org&sz=128',
+    bgColor: '#F1F5F9', // Pastel Slate
+  },
+
+  // freeCodeCamp
+  {
+    id: 'freecodecamp-learn',
+    title: 'freeCodeCamp',
+    platform: 'freeCodeCamp',
+    url: 'https://www.freecodecamp.org/learn',
+    domain: 'freecodecamp.org',
+    icon: 'https://www.google.com/s2/favicons?domain=freecodecamp.org&sz=128',
+    bgColor: '#FEF3C7', // Pastel Amber
+  },
 ];
