@@ -365,4 +365,52 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     icon: 'https://www.google.com/s2/favicons?domain=freecodecamp.org&sz=128',
     bgColor: '#FEF3C7', // Pastel Amber
   },
+
+  // ThreeUI
+  {
+    id: 'threeui-browse',
+    title: 'ThreeUI',
+    platform: 'ThreeUI',
+    url: 'https://threeui.com/browse?sort=recent',
+    domain: 'threeui.com',
+    icon: '/threeui-logo.svg',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=threeui.com&sz=128',
+    bgColor: '#DDD6FE', // Pastel Violet
+  },
+
+  // Taste Skill
+  {
+    id: 'tasteskill-framework',
+    title: 'Taste Skill',
+    platform: 'Taste Skill',
+    url: 'https://www.tasteskill.dev/',
+    domain: 'tasteskill.dev',
+    icon: '/tasteskill-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=tasteskill.dev&sz=128',
+    bgColor: '#F5F5F5', // Minimalist Off-White / Light Grey
+  },
+
+  // GSAP
+  {
+    id: 'gsap-animations',
+    title: 'GSAP',
+    platform: 'GSAP',
+    url: 'https://gsap.com/',
+    domain: 'gsap.com',
+    icon: '/gsap-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=gsap.com&sz=128',
+    bgColor: '#DCFCE7', // Pastel Mint / GreenSock Green
+  },
+
+  // 21st.dev
+  {
+    id: '21st-dev-components',
+    title: '21st.dev',
+    platform: '21st.dev',
+    url: 'https://21st.dev/',
+    domain: '21st.dev',
+    icon: '/21st-dev-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=21st.dev&sz=128',
+    bgColor: '#DBEAFE', // Pastel Sky Blue
+  },
 ];
