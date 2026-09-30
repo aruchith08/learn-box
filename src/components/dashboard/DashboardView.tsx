@@ -25,6 +25,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* 1. Canvas Welcome Greeting & Quote Card */}
       <WelcomeBanner />
 
+      {/* Mobile-only: Continue Watching positioned right below the "A little progress..." quote card */}
+      <div className="block xl:hidden mb-6 sm:mb-8">
+        <ContinueWatching onPlayVideo={onPlayVideo} />
+      </div>
+
       {/* 2. 5 Key Metrics Row (Total Videos, Completed, In Progress, Remaining, Overall Progress) */}
       <MetricCards />
 
@@ -32,11 +37,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Playlists + Activity & This Week */}
         <div className="xl:col-span-8 space-y-6">
-          {/* Mobile-only: Continue Watching positioned above My Playlists */}
-          <div className="block xl:hidden">
-            <ContinueWatching onPlayVideo={onPlayVideo} />
-          </div>
-
           {/* Active Playlists Grid (2x3 = 6 courses) */}
           <PlaylistGrid
             onSelectPlaylist={onSelectPlaylist}
