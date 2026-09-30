@@ -7,6 +7,7 @@ import {
   Bookmark,
   ActivityItem,
   UserSettings,
+  TodoItem,
 } from '../types/focusLearn';
 import {
   INITIAL_PLAYLISTS,
@@ -38,6 +39,7 @@ export interface UserDatabaseState {
   progress: Record<string, UserVideoProgress>;
   notes: Note[];
   bookmarks: Bookmark[];
+  todos?: TodoItem[];
   activity: ActivityItem[];
   settings: UserSettings;
   updatedAt: string;
@@ -128,6 +130,7 @@ export const dbService = {
     if (!state.playlists) state.playlists = [];
     if (!state.videos) state.videos = [];
     if (!state.playlistVideos) state.playlistVideos = [];
+    if (!state.todos) state.todos = [];
 
     const currentPlaylistIds = new Set(state.playlists.map((p) => p.id));
     const existingVideoIds = new Set(state.videos.map((v) => v.id));
@@ -303,7 +306,7 @@ export const dbService = {
       }
 
       // Fetch user subcollections concurrently
-      const [notesSnap, bookmarksSnap, playlistsSnap, videosSnap, pvSnap, activitySnap] =
+      const [notesSnap, bookmarksSnap, playlistsSnap, videosSnap, pvSnap, activitySnap, todosSnap] =
         await Promise.all([
           getDocs(collection(db, 'users', userId, 'notes')),
           getDocs(collection(db, 'users', userId, 'bookmarks')),
@@ -311,6 +314,7 @@ export const dbService = {
           getDocs(collection(db, 'users', userId, 'videos')),
           getDocs(collection(db, 'users', userId, 'playlistVideos')),
           getDocs(collection(db, 'users', userId, 'activity')),
+          getDocs(collection(db, 'users', userId, 'todos')),
         ]);
 
       const customNotes: Note[] = notesSnap.docs.map((d) => d.data() as Note);
@@ -319,6 +323,7 @@ export const dbService = {
       const customVideos: Video[] = videosSnap.docs.map((d) => d.data() as Video);
       const customPVs: PlaylistVideo[] = pvSnap.docs.map((d) => d.data() as PlaylistVideo);
       const activities: ActivityItem[] = activitySnap.docs.map((d) => d.data() as ActivityItem);
+      const customTodos: TodoItem[] = todosSnap.docs.map((d) => d.data() as TodoItem);
 
       // Generate base initial join records for default catalog
       const basePVs: PlaylistVideo[] = [];
@@ -349,6 +354,7 @@ export const dbService = {
         progress: progressMap,
         notes: customNotes,
         bookmarks: customBookmarks,
+        todos: customTodos,
         activity: activities.slice(0, 60),
         settings: {
           ...INITIAL_SETTINGS,
@@ -392,6 +398,7 @@ export const dbService = {
 
       const notes = legacyData.notes || [];
       const bookmarks = legacyData.bookmarks || [];
+      const todos = legacyData.todos || [];
       const activity = (legacyData.activity || []).slice(0, 60);
       const progress = legacyData.progress || {};
       const settings = legacyData.settings || INITIAL_SETTINGS;
@@ -440,6 +447,13 @@ export const dbService = {
         if (bm && bm.id) {
           const ref = doc(db, 'users', userId, 'bookmarks', bm.id);
           batchOps.push((b) => b.set(ref, sanitizeForFirestore(bm), { merge: true }));
+        }
+      });
+
+      todos.forEach((todo) => {
+        if (todo && todo.id) {
+          const ref = doc(db, 'users', userId, 'todos', todo.id);
+          batchOps.push((b) => b.set(ref, sanitizeForFirestore(todo), { merge: true }));
         }
       });
 
@@ -500,6 +514,7 @@ export const dbService = {
         progress,
         notes,
         bookmarks,
+        todos,
         activity,
         settings,
         updatedAt: legacyData.updatedAt || now,
@@ -544,6 +559,7 @@ export const dbService = {
       progress: {},
       notes: [],
       bookmarks: [],
+      todos: [],
       activity: [],
       settings: {
         ...INITIAL_SETTINGS,
@@ -683,6 +699,13 @@ export const dbService = {
         }
       });
 
+      (state.todos || []).forEach((todo) => {
+        if (todo && todo.id) {
+          const ref = doc(db, 'users', userId, 'todos', todo.id);
+          batchOps.push((b) => b.set(ref, sanitizeForFirestore(todo), { merge: true }));
+        }
+      });
+
       customPlaylists.forEach((pl) => {
         if (pl && pl.id) {
           const ref = doc(db, 'users', userId, 'playlists', pl.id);
@@ -722,6 +745,15 @@ export const dbService = {
   /**
    * Explicit subcollection document deletions
    */
+  async deleteTodoFromCloud(userId: string, todoId: string): Promise<void> {
+    if (!db || !userId || userId === 'guest') return;
+    try {
+      await deleteDoc(doc(db, 'users', userId, 'todos', todoId));
+    } catch (e) {
+      console.warn('Error deleting todo from cloud:', e);
+    }
+  },
+
   async deleteNoteFromCloud(userId: string, noteId: string): Promise<void> {
     if (!db || !userId || userId === 'guest') return;
     try {
@@ -781,9 +813,17 @@ export const dbService = {
     const hasGuestProgress = guestState && Object.keys(guestState.progress || {}).length > 0;
     const hasGuestNotes = guestState && (guestState.notes || []).length > 0;
     const hasGuestBookmarks = guestState && (guestState.bookmarks || []).length > 0;
+    const hasGuestTodos = guestState && (guestState.todos || []).length > 0;
     const hasGuestActivity = guestState && (guestState.activity || []).length > 0;
 
-    if (!guestState || (!hasGuestProgress && !hasGuestNotes && !hasGuestBookmarks && !hasGuestActivity)) {
+    if (
+      !guestState ||
+      (!hasGuestProgress &&
+        !hasGuestNotes &&
+        !hasGuestBookmarks &&
+        !hasGuestTodos &&
+        !hasGuestActivity)
+    ) {
       try {
         localStorage.removeItem(guestKey);
         localStorage.removeItem(guestLegacyKey);
@@ -857,6 +897,15 @@ export const dbService = {
       }
     });
 
+    const existingTodoIds = new Set((existingUserState.todos || []).map((t) => t.id));
+    const mergedTodos = [...(existingUserState.todos || [])];
+    (guestState.todos || []).forEach((t) => {
+      if (!existingTodoIds.has(t.id)) {
+        mergedTodos.push(t);
+        existingTodoIds.add(t.id);
+      }
+    });
+
     const mergedState: UserDatabaseState = {
       version: 4,
       userId: newUserId,
@@ -871,6 +920,7 @@ export const dbService = {
       progress: mergedProgress,
       notes: mergedNotes,
       bookmarks: mergedBookmarks,
+      todos: mergedTodos,
       activity: [...guestState.activity, ...existingUserState.activity].slice(0, 60),
       settings: existingUserState.settings,
       updatedAt: new Date().toISOString(),

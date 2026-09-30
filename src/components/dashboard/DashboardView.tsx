@@ -4,6 +4,7 @@ import { MetricCards } from './MetricCards';
 import { PlaylistGrid } from './PlaylistGrid';
 import { ContinueWatching } from './ContinueWatching';
 import { UpNextList } from './UpNextList';
+import { TodoBox } from './TodoBox';
 import { WorkSticker } from './WorkSticker';
 import { WeeklyChart } from './WeeklyChart';
 import { ActivityFeed } from './ActivityFeed';
@@ -25,7 +26,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* 1. Canvas Welcome Greeting & Quote Card */}
       <WelcomeBanner />
 
-      {/* Mobile-only: Continue Watching positioned right below the "A little progress..." quote card */}
+      {/* Mobile-only: TodoBox positioned directly above Continue Watching */}
+      <div className="block xl:hidden mb-4 sm:mb-6">
+        <TodoBox />
+      </div>
+
+      {/* Mobile-only: Continue Watching positioned right below TodoBox */}
       <div className="block xl:hidden mb-6 sm:mb-8">
         <ContinueWatching onPlayVideo={onPlayVideo} />
       </div>
@@ -50,11 +56,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column (4 cols): Continue Watching + Up Next + Tilted Sticker */}
+        {/* Right Column (4 cols): Continue Watching + TodoBox + Up Next + Tilted Sticker */}
         <div className="xl:col-span-4 space-y-5">
           {/* Desktop-only: Continue Watching Card */}
           <div className="hidden xl:block">
             <ContinueWatching onPlayVideo={onPlayVideo} />
+          </div>
+
+          {/* Desktop-only: TodoBox positioned directly below Continue Watching */}
+          <div className="hidden xl:block">
+            <TodoBox />
           </div>
 
           {/* Up Next in Queue */}

@@ -9,6 +9,7 @@ import {
   ActivityItem,
   UserSettings,
   TabType,
+  TodoItem,
 } from '../types/focusLearn';
 import { dbService, UserDatabaseState } from '../services/dbService';
 import { useAuth } from './AuthContext';
@@ -49,6 +50,7 @@ interface LearningContextType {
   progress: Record<string, UserVideoProgress>;
   notes: Note[];
   bookmarks: Bookmark[];
+  todos: TodoItem[];
   activity: ActivityItem[];
   activities: ActivityItem[];
   settings: UserSettings;
@@ -102,6 +104,10 @@ interface LearningContextType {
   deleteNote: (noteId: string) => void;
   toggleBookmark: (videoId: string) => void;
   isBookmarked: (videoId: string) => boolean;
+  addTodo: (text: string) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
+  clearCompletedTodos: () => void;
   updateSettings: (newSettings: Partial<UserSettings>) => void;
   resetToDefaults: () => void;
   findCanonicalVideo: (youtubeId: string) => Video | undefined;
@@ -1031,6 +1037,75 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [dbState.bookmarks]
   );
 
+  const addTodo = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const newTodo: TodoItem = {
+        id: 'todo-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+        text: trimmed,
+        completed: false,
+        createdAt: new Date().toISOString(),
+      };
+      setDbState((prev) => {
+        const nextState = {
+          ...prev,
+          todos: [newTodo, ...(prev.todos || [])],
+        };
+        dbService.saveLocalUserData(currentUserId, nextState, true);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const toggleTodo = useCallback(
+    (id: string) => {
+      setDbState((prev) => {
+        const nextTodos = (prev.todos || []).map((t) =>
+          t.id === id ? { ...t, completed: !t.completed, updatedAt: new Date().toISOString() } : t
+        );
+        const nextState = {
+          ...prev,
+          todos: nextTodos,
+        };
+        dbService.saveLocalUserData(currentUserId, nextState, true);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const deleteTodo = useCallback(
+    (todoId: string) => {
+      setDbState((prev) => {
+        const nextState = {
+          ...prev,
+          todos: (prev.todos || []).filter((t) => t.id !== todoId),
+        };
+        dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.deleteTodoFromCloud(currentUserId, todoId).catch(console.warn);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const clearCompletedTodos = useCallback(() => {
+    setDbState((prev) => {
+      const completedTodos = (prev.todos || []).filter((t) => t.completed);
+      const nextState = {
+        ...prev,
+        todos: (prev.todos || []).filter((t) => !t.completed),
+      };
+      dbService.saveLocalUserData(currentUserId, nextState, true);
+      completedTodos.forEach((t) => {
+        dbService.deleteTodoFromCloud(currentUserId, t.id).catch(console.warn);
+      });
+      return nextState;
+    });
+  }, [currentUserId]);
+
   const updateSettings = useCallback(
     (newSettings: Partial<UserSettings>) => {
       setDbState((prev) => {
@@ -1071,6 +1146,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         progress: dbState.progress,
         notes: dbState.notes,
         bookmarks: dbState.bookmarks,
+        todos: dbState.todos || [],
         activity: dbState.activity,
         activities: dbState.activity,
         settings: { ...dbState.settings, streakDays: metrics.streakDays },
@@ -1094,6 +1170,10 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         deleteNote,
         toggleBookmark,
         isBookmarked,
+        addTodo,
+        toggleTodo,
+        deleteTodo,
+        clearCompletedTodos,
         updateSettings,
         resetToDefaults,
         findCanonicalVideo,

@@ -127,6 +127,14 @@ export interface UserSettings {
   dailyGoalMinutes?: number;
 }
 
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface CSVImportPreview {
   playlistName: string;
   creator?: string;
