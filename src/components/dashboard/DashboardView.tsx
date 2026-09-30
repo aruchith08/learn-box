@@ -32,6 +32,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Playlists + Activity & This Week */}
         <div className="xl:col-span-8 space-y-6">
+          {/* Mobile-only: Continue Watching positioned above My Playlists */}
+          <div className="block xl:hidden">
+            <ContinueWatching onPlayVideo={onPlayVideo} />
+          </div>
+
           {/* Active Playlists Grid (2x3 = 6 courses) */}
           <PlaylistGrid
             onSelectPlaylist={onSelectPlaylist}
@@ -47,8 +52,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {/* Right Column (4 cols): Continue Watching + Up Next + Tilted Sticker */}
         <div className="xl:col-span-4 space-y-5">
-          {/* Continue Watching Card */}
-          <ContinueWatching onPlayVideo={onPlayVideo} />
+          {/* Desktop-only: Continue Watching Card */}
+          <div className="hidden xl:block">
+            <ContinueWatching onPlayVideo={onPlayVideo} />
+          </div>
 
           {/* Up Next in Queue */}
           <UpNextList onPlayVideo={onPlayVideo} />
