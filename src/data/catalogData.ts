@@ -425,4 +425,40 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=github.com&sz=128',
     bgColor: '#F1F5F9', // Pastel Slate
   },
+
+  // Lenis
+  {
+    id: 'lenis-smooth-scroll',
+    title: 'Lenis',
+    platform: 'Lenis',
+    url: 'https://lenis.dev/',
+    domain: 'lenis.dev',
+    icon: '/lenis-logo.svg',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=lenis.dev&sz=128',
+    bgColor: '#FFEDD5', // Pastel Peach / Warm Apricot
+  },
+
+  // Vanta.js
+  {
+    id: 'vantajs-backgrounds',
+    title: 'Vanta.js',
+    platform: 'Vanta.js',
+    url: 'https://www.vantajs.com/',
+    domain: 'vantajs.com',
+    icon: '/vantajs-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=vantajs.com&sz=128',
+    bgColor: '#E0E7FF', // Pastel Indigo
+  },
+
+  // React Bits
+  {
+    id: 'reactbits-components',
+    title: 'React Bits',
+    platform: 'React Bits',
+    url: 'https://reactbits.dev/',
+    domain: 'reactbits.dev',
+    icon: '/reactbits-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=reactbits.dev&sz=128',
+    bgColor: '#E0F2FE', // Pastel Cyan
+  },
 ];
