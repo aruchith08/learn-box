@@ -129,6 +129,21 @@ export const INITIAL_PLAYLISTS: Playlist[] = [
   "createdAt": "2026-01-01T00:00:00.000Z",
   "updatedAt": "2026-09-29T00:00:00.000Z"
 }
+,
+{
+  "id": "pl-backend-bsdk",
+  "title": "BSDK: Backend Stack Developer's Kit",
+  "creator": "Rahul Maheshwari",
+  "description": "Comprehensive backend engineering and Linux masterclass series covering Backend Dev 2.0 Roadmap, Core of OS, Linux Networking & Network Troubleshooting, and hands-on system projects.",
+  "color": "#C7D2FE",
+  "iconName": "terminal",
+  "totalVideos": 7,
+  "completedVideos": 0,
+  "progressPercentage": 0,
+  "isPinned": true,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+}
 ];
 
 export const INITIAL_VIDEOS: Video[] = [
@@ -5764,6 +5779,119 @@ export const INITIAL_VIDEOS: Video[] = [
   "position": 11,
   "createdAt": "2026-01-01T00:00:00.000Z",
   "updatedAt": "2026-09-29T00:00:00.000Z"
+}
+,
+{
+  "id": "pl-bsdk-v1",
+  "youtubeId": "6xc2LGYDaJw",
+  "title": "BSDK: Backend Dev 2.0 Roadmap | Ep.1 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=6xc2LGYDaJw",
+  "thumbnail": "https://img.youtube.com/vi/6xc2LGYDaJw/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 535,
+  "durationFormatted": "8:55",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Backend Dev 2.0 Roadmap",
+  "playlistId": "pl-backend-bsdk",
+  "position": 1,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+},
+{
+  "id": "pl-bsdk-v2",
+  "youtubeId": "Ge7_dlUzQPQ",
+  "title": "BSDK: Core of OS | Ep. 2 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=Ge7_dlUzQPQ",
+  "thumbnail": "https://img.youtube.com/vi/Ge7_dlUzQPQ/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 2690,
+  "durationFormatted": "44:50",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Core of OS",
+  "playlistId": "pl-backend-bsdk",
+  "position": 2,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+},
+{
+  "id": "pl-bsdk-v3",
+  "youtubeId": "-cAAq09zHNg",
+  "title": "BSDK: Backend Dev 2.0 Roadmap | Ep.3 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=-cAAq09zHNg",
+  "thumbnail": "https://img.youtube.com/vi/-cAAq09zHNg/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 6122,
+  "durationFormatted": "1:42:02",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Backend Dev 2.0 Roadmap",
+  "playlistId": "pl-backend-bsdk",
+  "position": 3,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+},
+{
+  "id": "pl-bsdk-v4",
+  "youtubeId": "MFmGpIFlSEo",
+  "title": "BSDK: Linux from basics to interviews | DIY:1 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=MFmGpIFlSEo",
+  "thumbnail": "https://img.youtube.com/vi/MFmGpIFlSEo/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 8483,
+  "durationFormatted": "2:21:23",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Linux from basics to interviews",
+  "playlistId": "pl-backend-bsdk",
+  "position": 4,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+},
+{
+  "id": "pl-bsdk-v5",
+  "youtubeId": "_1XNEriXbTY",
+  "title": "BSDK: Linux Networking and Network Troubleshooting | DIY:2 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=_1XNEriXbTY",
+  "thumbnail": "https://img.youtube.com/vi/_1XNEriXbTY/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 2411,
+  "durationFormatted": "40:11",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Linux Networking and Network Troubleshooting",
+  "playlistId": "pl-backend-bsdk",
+  "position": 5,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+},
+{
+  "id": "pl-bsdk-v6",
+  "youtubeId": "l7RPUZT80x8",
+  "title": "BSDK: Developer for a \"Reason\" | Unlock DevStory:1 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=l7RPUZT80x8",
+  "thumbnail": "https://img.youtube.com/vi/l7RPUZT80x8/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 424,
+  "durationFormatted": "7:04",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Developer for a \"Reason\"",
+  "playlistId": "pl-backend-bsdk",
+  "position": 6,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+},
+{
+  "id": "pl-bsdk-v7",
+  "youtubeId": "6QNd61BKYf4",
+  "title": "BSDK: Powering on the Beast | Unlock Activity:1 | RAHUL MAHESHWARI",
+  "url": "https://www.youtube.com/watch?v=6QNd61BKYf4",
+  "thumbnail": "https://img.youtube.com/vi/6QNd61BKYf4/hqdefault.jpg",
+  "channel": "Linux Socials",
+  "duration": 1330,
+  "durationFormatted": "22:10",
+  "category": "BSDK: Backend Stack Developer's Kit",
+  "topic": "BSDK: Powering on the Beast",
+  "playlistId": "pl-backend-bsdk",
+  "position": 7,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-09-30T00:00:00.000Z"
 }
 ];
 

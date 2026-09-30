@@ -95,6 +95,7 @@ export const PlaylistsView: React.FC<PlaylistsViewProps> = ({
     if (lower.includes('django')) return { icon: Laptop, bg: 'bg-[#BBF7D0]' };
     if (lower.includes('fastapi')) return { icon: Rocket, bg: 'bg-[#99F6E4]' };
     if (lower.includes('sql')) return { icon: Database, bg: 'bg-[#FED7AA]' };
+    if (lower.includes('bsdk') || lower.includes('backend stack')) return { icon: Terminal, bg: 'bg-[#C7D2FE]' };
     if (lower.includes('advanced level') || lower.includes('top python')) return { icon: Cpu, bg: 'bg-[#DDD6FE]' };
     if (lower.includes('python')) return { icon: Terminal, bg: 'bg-[#A7F3D0]' };
     if (lower.includes('java') || lower.includes('dsa in 30')) return { icon: Coffee, bg: 'bg-[#FEF08A]' };

@@ -59,9 +59,12 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
     if (lower.includes('sql')) {
       return { icon: Database, bg: 'bg-[#FED7AA]', label: '#9' };
     }
+    if (lower.includes('bsdk') || lower.includes('backend stack')) {
+      return { icon: Terminal, bg: 'bg-[#C7D2FE]', label: '#10' };
+    }
 
-    const defaultColors = ['bg-[#FECDD3]', 'bg-[#A7F3D0]', 'bg-[#DDD6FE]', 'bg-[#FEF08A]', 'bg-[#BAE6FD]', 'bg-[#FECACA]', 'bg-[#BBF7D0]', 'bg-[#99F6E4]', 'bg-[#FED7AA]'];
-    const defaultIcons = [Laptop, Terminal, Rocket, Coffee, BarChart3, Bot, Laptop, Rocket, Database];
+    const defaultColors = ['bg-[#FECDD3]', 'bg-[#A7F3D0]', 'bg-[#DDD6FE]', 'bg-[#FEF08A]', 'bg-[#BAE6FD]', 'bg-[#FECACA]', 'bg-[#BBF7D0]', 'bg-[#99F6E4]', 'bg-[#FED7AA]', 'bg-[#C7D2FE]'];
+    const defaultIcons = [Laptop, Terminal, Rocket, Coffee, BarChart3, Bot, Laptop, Rocket, Database, Terminal];
     return {
       icon: defaultIcons[index % defaultIcons.length],
       bg: defaultColors[index % defaultColors.length],
