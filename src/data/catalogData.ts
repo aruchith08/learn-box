@@ -413,4 +413,16 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=21st.dev&sz=128',
     bgColor: '#DBEAFE', // Pastel Sky Blue
   },
+
+  // GitHub
+  {
+    id: 'github-public-apis',
+    title: 'Public APIs',
+    platform: 'GitHub',
+    url: 'https://github.com/public-apis/public-apis',
+    domain: 'github.com',
+    icon: '/github-logo.svg',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=github.com&sz=128',
+    bgColor: '#F1F5F9', // Pastel Slate
+  },
 ];
