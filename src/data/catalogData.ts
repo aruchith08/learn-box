@@ -264,6 +264,18 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     bgColor: '#E0F2FE', // Pastel Sky Blue
   },
 
+  // Kaggle Learn
+  {
+    id: 'kaggle-learn',
+    title: 'Kaggle Learn',
+    platform: 'Kaggle',
+    url: 'https://www.kaggle.com/learn',
+    domain: 'kaggle.com',
+    icon: '/kaggle-icon.svg',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=kaggle.com&sz=128',
+    bgColor: '#E0F7FE', // Pastel Cyan / Kaggle Tint
+  },
+
   // Infosys Springboard
   {
     id: 'infosys-springboard',
