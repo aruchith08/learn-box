@@ -252,6 +252,18 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     bgColor: '#F3E8FF', // Pastel Lavender
   },
 
+  // Google Developers - Machine Learning
+  {
+    id: 'google-machine-learning',
+    title: 'Machine Learning',
+    platform: 'Google Developers',
+    url: 'https://developers.google.com/machine-learning/',
+    domain: 'developers.google.com',
+    icon: '/google-developers-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=developers.google.com&sz=128',
+    bgColor: '#E0F2FE', // Pastel Sky Blue
+  },
+
   // Infosys Springboard
   {
     id: 'infosys-springboard',
