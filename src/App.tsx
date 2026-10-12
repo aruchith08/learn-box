@@ -15,6 +15,7 @@ import { BookmarksView } from './components/bookmarks/BookmarksView';
 import { AllNotesView } from './components/notes/AllNotesView';
 import { StatsView } from './components/stats/StatsView';
 import { CatalogView } from './components/catalog/CatalogView';
+import { LeetCodeStreakView } from './components/leetcode/LeetCodeStreakView';
 
 // Modals
 import { AddModal } from './components/modals/AddModal';
@@ -153,6 +154,9 @@ function MainApp() {
 
       case 'catalog':
         return <CatalogView />;
+
+      case 'leetcode':
+        return <LeetCodeStreakView />;
 
       case 'tracker':
         return <GlobalTrackerView onPlayVideo={handlePlayVideo} />;

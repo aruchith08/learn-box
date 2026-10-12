@@ -8,6 +8,9 @@ import {
   ActivityItem,
   UserSettings,
   TodoItem,
+  LeetCodeState,
+  LeetCodeSubmission,
+  LeetCodeStats,
 } from '../types/focusLearn';
 import {
   INITIAL_PLAYLISTS,
@@ -29,6 +32,24 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
+export const INITIAL_LEETCODE: LeetCodeState = {
+  username: '',
+  stats: {
+    currentStreak: 0,
+    longestStreak: 0,
+    totalSolved: 0,
+    easySolved: 0,
+    mediumSolved: 0,
+    hardSolved: 0,
+    ranking: 0,
+    submissionCalendar: {},
+  },
+  submissions: [],
+  dailyGoal: 1,
+  streakFreezesAvailable: 2,
+  streakFreezesUsed: 0,
+};
+
 export interface UserDatabaseState {
   version: number;
   userId: string;
@@ -42,6 +63,7 @@ export interface UserDatabaseState {
   todos?: TodoItem[];
   activity: ActivityItem[];
   settings: UserSettings;
+  leetcode?: LeetCodeState;
   updatedAt: string;
 }
 
@@ -131,6 +153,13 @@ export const dbService = {
     if (!state.videos) state.videos = [];
     if (!state.playlistVideos) state.playlistVideos = [];
     if (!state.todos) state.todos = [];
+    if (!state.leetcode) {
+      state.leetcode = {
+        ...INITIAL_LEETCODE,
+        stats: { ...INITIAL_LEETCODE.stats },
+        submissions: [],
+      };
+    }
 
     const currentPlaylistIds = new Set(state.playlists.map((p) => p.id));
     const existingVideoIds = new Set(state.videos.map((v) => v.id));
@@ -291,11 +320,13 @@ export const dbService = {
     try {
       const profileDocRef = doc(db, 'users', userId, 'profile', 'main');
       const progressDocRef = doc(db, 'users', userId, 'data', 'progress');
+      const leetcodeDocRef = doc(db, 'users', userId, 'data', 'leetcode');
 
-      // Fetch profile & progress
-      const [profileSnap, progressSnap] = await Promise.all([
+      // Fetch profile, progress & leetcode
+      const [profileSnap, progressSnap, leetcodeSnap] = await Promise.all([
         getDoc(profileDocRef),
         getDoc(progressDocRef),
+        getDoc(leetcodeDocRef),
       ]);
 
       const profileData = profileSnap.exists() ? profileSnap.data() : {};
@@ -303,6 +334,24 @@ export const dbService = {
       if (progressSnap.exists()) {
         const pData = progressSnap.data();
         progressMap = pData.records || pData.progress || {};
+      }
+
+      let userLeetcode: LeetCodeState = {
+        ...INITIAL_LEETCODE,
+        stats: { ...INITIAL_LEETCODE.stats },
+        submissions: [],
+      };
+      if (leetcodeSnap.exists()) {
+        const lcData = leetcodeSnap.data() as LeetCodeState;
+        userLeetcode = {
+          ...INITIAL_LEETCODE,
+          ...lcData,
+          stats: {
+            ...INITIAL_LEETCODE.stats,
+            ...(lcData.stats || {}),
+          },
+          submissions: Array.isArray(lcData.submissions) ? lcData.submissions : [],
+        };
       }
 
       // Fetch user subcollections concurrently
@@ -360,6 +409,7 @@ export const dbService = {
           ...INITIAL_SETTINGS,
           ...(profileData.settings || {}),
         },
+        leetcode: userLeetcode,
         updatedAt: profileData.updatedAt || new Date().toISOString(),
       };
 
@@ -517,6 +567,11 @@ export const dbService = {
         todos,
         activity,
         settings,
+        leetcode: legacyData.leetcode || {
+          ...INITIAL_LEETCODE,
+          stats: { ...INITIAL_LEETCODE.stats },
+          submissions: [],
+        },
         updatedAt: legacyData.updatedAt || now,
       };
 
@@ -567,6 +622,11 @@ export const dbService = {
         resumePosition: true,
         markCompleteThreshold: 90,
       } as any,
+      leetcode: {
+        ...INITIAL_LEETCODE,
+        stats: { ...INITIAL_LEETCODE.stats },
+        submissions: [],
+      },
       updatedAt: new Date().toISOString(),
     };
 
@@ -737,8 +797,87 @@ export const dbService = {
       if (batchOps.length > 0) {
         await commitBatches(db, batchOps);
       }
+
+      // 4. Sync LeetCode state if present
+      if (state.leetcode) {
+        const leetcodeRef = doc(db, 'users', userId, 'data', 'leetcode');
+        await setDoc(
+          leetcodeRef,
+          sanitizeForFirestore(state.leetcode),
+          { merge: true }
+        );
+      }
     } catch (err) {
       console.warn('Background Firestore sync error:', err);
+    }
+  },
+
+  /**
+   * Surgical LeetCode sync: updates only data/leetcode document
+   */
+  async saveLeetCodeToCloud(userId: string, leetcode: LeetCodeState): Promise<void> {
+    if (!db || !userId || userId === 'guest') return;
+    try {
+      const leetcodeRef = doc(db, 'users', userId, 'data', 'leetcode');
+      await setDoc(
+        leetcodeRef,
+        sanitizeForFirestore(leetcode),
+        { merge: true }
+      );
+    } catch (err) {
+      console.warn('LeetCode cloud sync error:', err);
+    }
+  },
+
+  /**
+   * Fetch public LeetCode user profile and calendar stats
+   */
+  async fetchLeetCodeProfile(username: string): Promise<any> {
+    const cleanUser = username.trim().toLowerCase();
+    if (!cleanUser) throw new Error('Username cannot be empty');
+
+    const [profileRes, calendarRes] = await Promise.allSettled([
+      fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${encodeURIComponent(cleanUser)}`),
+      fetch(`https://alfa-leetcode-api.onrender.com/${encodeURIComponent(cleanUser)}/calendar`),
+    ]);
+
+    let profileData: any = null;
+    let calendarData: any = null;
+
+    if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
+      try {
+        profileData = await profileRes.value.json();
+      } catch (e) {
+        console.warn('Failed to parse profile JSON', e);
+      }
+    }
+
+    if (calendarRes.status === 'fulfilled' && calendarRes.value.ok) {
+      try {
+        calendarData = await calendarRes.value.json();
+      } catch (e) {
+        console.warn('Failed to parse calendar JSON', e);
+      }
+    }
+
+    if (!profileData && !calendarData) {
+      throw new Error(`Could not find LeetCode profile for "${cleanUser}".`);
+    }
+
+    return { profileData, calendarData };
+  },
+
+  /**
+   * Fetch today's official LeetCode Daily Challenge
+   */
+  async fetchDailyLeetCodeProblem(): Promise<any> {
+    try {
+      const res = await fetch('https://alfa-leetcode-api.onrender.com/daily');
+      if (!res.ok) throw new Error('Failed to fetch daily challenge');
+      return await res.json();
+    } catch (err) {
+      console.warn('Daily problem fetch error:', err);
+      return null;
     }
   },
 

@@ -10,8 +10,11 @@ import {
   UserSettings,
   TabType,
   TodoItem,
+  LeetCodeState,
+  LeetCodeSubmission,
+  LeetCodeStats,
 } from '../types/focusLearn';
-import { dbService, UserDatabaseState } from '../services/dbService';
+import { dbService, UserDatabaseState, INITIAL_LEETCODE } from '../services/dbService';
 import { useAuth } from './AuthContext';
 import { formatTime } from '../services/youtubeParser';
 
@@ -111,6 +114,14 @@ interface LearningContextType {
   updateSettings: (newSettings: Partial<UserSettings>) => void;
   resetToDefaults: () => void;
   findCanonicalVideo: (youtubeId: string) => Video | undefined;
+
+  // LeetCode Streak Maintainer
+  leetcode: LeetCodeState;
+  logLeetCodeProblem: (submission: Omit<LeetCodeSubmission, 'id' | 'createdAt'>) => void;
+  deleteLeetCodeProblem: (submissionId: string) => void;
+  syncLeetCodeProfile: (username?: string) => Promise<{ success: boolean; error?: string }>;
+  useStreakFreeze: () => boolean;
+  updateLeetCodeDailyGoal: (goal: number) => void;
 }
 
 const LearningContext = createContext<LearningContextType | undefined>(undefined);
@@ -464,6 +475,32 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     return latest;
   }, [allVideos, continueWatchingVideo, dbState.progress]);
+
+  // Synchronize streak and todos with native Android widgets if running inside native app wrapper
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && (window as any).AndroidBridge) {
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const isSafeToday = (metrics.studyDates || []).includes(todayStr);
+        (window as any).AndroidBridge.syncStreak(
+          metrics.streakDays,
+          isSafeToday,
+          JSON.stringify(metrics.studyDates || [])
+        );
+        (window as any).AndroidBridge.syncTodos(
+          JSON.stringify(
+            (dbState.todos || []).map((t) => ({
+              id: t.id,
+              text: t.text,
+              completed: t.completed,
+            }))
+          )
+        );
+      }
+    } catch (err) {
+      console.warn('Native bridge sync error:', err);
+    }
+  }, [metrics.streakDays, metrics.studyDates, dbState.todos]);
 
   // Actions
   const playVideo = useCallback((videoId: string, playlistId?: string | null) => {
@@ -1126,6 +1163,299 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     dbService.saveLocalUserData(currentUserId, initialState, true);
   }, [currentUserId]);
 
+  // LeetCode Streak Actions
+  const leetcodeState = useMemo<LeetCodeState>(() => {
+    return dbState.leetcode || INITIAL_LEETCODE;
+  }, [dbState.leetcode]);
+
+  const logLeetCodeProblem = useCallback(
+    (submission: Omit<LeetCodeSubmission, 'id' | 'createdAt'>) => {
+      const newSubmission: LeetCodeSubmission = {
+        ...submission,
+        id: `lc-sub-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        createdAt: new Date().toISOString(),
+      };
+
+      setDbState((prev) => {
+        const curLc = prev.leetcode || { ...INITIAL_LEETCODE, stats: { ...INITIAL_LEETCODE.stats } };
+        const updatedSubmissions = [newSubmission, ...(curLc.submissions || [])];
+
+        const dateSet = new Set<string>();
+        updatedSubmissions.forEach((s) => s.date && dateSet.add(s.date));
+
+        if (curLc.stats.submissionCalendar) {
+          Object.keys(curLc.stats.submissionCalendar).forEach((tsStr) => {
+            const count = curLc.stats.submissionCalendar![tsStr];
+            if (count > 0) {
+              const d = new Date(parseInt(tsStr, 10) * 1000);
+              dateSet.add(d.toLocaleDateString('en-CA'));
+            }
+          });
+        }
+
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+
+        let streak = 0;
+        let checkDate = new Date();
+        if (!dateSet.has(todayStr) && curLc.lastFreezeDate !== todayStr) {
+          if (dateSet.has(yesterdayStr) || curLc.lastFreezeDate === yesterdayStr) {
+            checkDate.setDate(checkDate.getDate() - 1);
+          }
+        }
+
+        while (true) {
+          const curStr = checkDate.toLocaleDateString('en-CA');
+          if (dateSet.has(curStr) || curLc.lastFreezeDate === curStr) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+
+        const longest = Math.max(curLc.stats.longestStreak || 0, streak);
+
+        const easyInc = submission.difficulty === 'Easy' ? 1 : 0;
+        const medInc = submission.difficulty === 'Medium' ? 1 : 0;
+        const hardInc = submission.difficulty === 'Hard' ? 1 : 0;
+
+        const updatedStats: LeetCodeStats = {
+          ...curLc.stats,
+          currentStreak: streak,
+          longestStreak: longest,
+          totalSolved: (curLc.stats.totalSolved || 0) + 1,
+          easySolved: (curLc.stats.easySolved || 0) + easyInc,
+          mediumSolved: (curLc.stats.mediumSolved || 0) + medInc,
+          hardSolved: (curLc.stats.hardSolved || 0) + hardInc,
+          lastSolvedDate: submission.date,
+        };
+
+        const nextLc: LeetCodeState = {
+          ...curLc,
+          stats: updatedStats,
+          submissions: updatedSubmissions,
+        };
+
+        const nextState = {
+          ...prev,
+          leetcode: nextLc,
+        };
+
+        dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.saveLeetCodeToCloud(currentUserId, nextLc).catch(console.warn);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const deleteLeetCodeProblem = useCallback(
+    (submissionId: string) => {
+      setDbState((prev) => {
+        const curLc = prev.leetcode || { ...INITIAL_LEETCODE, stats: { ...INITIAL_LEETCODE.stats } };
+        const removed = (curLc.submissions || []).find((s) => s.id === submissionId);
+        const updatedSubmissions = (curLc.submissions || []).filter((s) => s.id !== submissionId);
+
+        const easyDec = removed?.difficulty === 'Easy' ? 1 : 0;
+        const medDec = removed?.difficulty === 'Medium' ? 1 : 0;
+        const hardDec = removed?.difficulty === 'Hard' ? 1 : 0;
+
+        const updatedStats: LeetCodeStats = {
+          ...curLc.stats,
+          totalSolved: Math.max(0, (curLc.stats.totalSolved || 0) - 1),
+          easySolved: Math.max(0, (curLc.stats.easySolved || 0) - easyDec),
+          mediumSolved: Math.max(0, (curLc.stats.mediumSolved || 0) - medDec),
+          hardSolved: Math.max(0, (curLc.stats.hardSolved || 0) - hardDec),
+        };
+
+        const nextLc: LeetCodeState = {
+          ...curLc,
+          stats: updatedStats,
+          submissions: updatedSubmissions,
+        };
+
+        const nextState = {
+          ...prev,
+          leetcode: nextLc,
+        };
+
+        dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.saveLeetCodeToCloud(currentUserId, nextLc).catch(console.warn);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
+  const syncLeetCodeProfile = useCallback(
+    async (usernameToSync?: string): Promise<{ success: boolean; error?: string }> => {
+      const targetUser = (usernameToSync || dbState.leetcode?.username || '').trim();
+      if (!targetUser) {
+        return { success: false, error: 'Please enter a LeetCode username' };
+      }
+
+      try {
+        const { profileData, calendarData } = await dbService.fetchLeetCodeProfile(targetUser);
+
+        let parsedCalendar: Record<string, number> = {};
+        if (calendarData?.submissionCalendar) {
+          try {
+            parsedCalendar =
+              typeof calendarData.submissionCalendar === 'string'
+                ? JSON.parse(calendarData.submissionCalendar)
+                : calendarData.submissionCalendar;
+          } catch (e) {
+            console.warn('Calendar parse error', e);
+          }
+        } else if (profileData?.submissionCalendar) {
+          try {
+            parsedCalendar =
+              typeof profileData.submissionCalendar === 'string'
+                ? JSON.parse(profileData.submissionCalendar)
+                : profileData.submissionCalendar;
+          } catch (e) {
+            console.warn('Profile calendar parse error', e);
+          }
+        }
+
+        setDbState((prev) => {
+          const curLc = prev.leetcode || { ...INITIAL_LEETCODE, stats: { ...INITIAL_LEETCODE.stats } };
+
+          const dateSet = new Set<string>();
+          (curLc.submissions || []).forEach((s) => s.date && dateSet.add(s.date));
+
+          Object.keys(parsedCalendar).forEach((tsStr) => {
+            const count = parsedCalendar[tsStr];
+            if (count > 0) {
+              const d = new Date(parseInt(tsStr, 10) * 1000);
+              dateSet.add(d.toLocaleDateString('en-CA'));
+            }
+          });
+
+          const todayStr = new Date().toLocaleDateString('en-CA');
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+
+          let streak = calendarData?.streak || 0;
+          if (!streak) {
+            let checkDate = new Date();
+            if (!dateSet.has(todayStr) && curLc.lastFreezeDate !== todayStr) {
+              if (dateSet.has(yesterdayStr) || curLc.lastFreezeDate === yesterdayStr) {
+                checkDate.setDate(checkDate.getDate() - 1);
+              }
+            }
+            while (true) {
+              const curStr = checkDate.toLocaleDateString('en-CA');
+              if (dateSet.has(curStr) || curLc.lastFreezeDate === curStr) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+              } else {
+                break;
+              }
+            }
+          }
+
+          const totalSolved = profileData?.totalSolved ?? curLc.stats.totalSolved;
+          const easySolved = profileData?.easySolved ?? curLc.stats.easySolved;
+          const mediumSolved = profileData?.mediumSolved ?? curLc.stats.mediumSolved;
+          const hardSolved = profileData?.hardSolved ?? curLc.stats.hardSolved;
+          const ranking = profileData?.ranking ?? curLc.stats.ranking;
+
+          const updatedStats: LeetCodeStats = {
+            ...curLc.stats,
+            username: targetUser,
+            currentStreak: streak,
+            longestStreak: Math.max(curLc.stats.longestStreak || 0, streak),
+            totalSolved,
+            easySolved,
+            mediumSolved,
+            hardSolved,
+            ranking,
+            submissionCalendar: parsedCalendar,
+            lastSyncedAt: new Date().toISOString(),
+          };
+
+          const nextLc: LeetCodeState = {
+            ...curLc,
+            username: targetUser,
+            stats: updatedStats,
+          };
+
+          const nextState = {
+            ...prev,
+            leetcode: nextLc,
+          };
+
+          dbService.saveLocalUserData(currentUserId, nextState, true);
+          dbService.saveLeetCodeToCloud(currentUserId, nextLc).catch(console.warn);
+          return nextState;
+        });
+
+        return { success: true };
+      } catch (err: any) {
+        console.warn('Sync LeetCode profile failed:', err);
+        return { success: false, error: err?.message || 'Failed to sync LeetCode profile' };
+      }
+    },
+    [currentUserId, dbState.leetcode?.username]
+  );
+
+  const useStreakFreeze = useCallback((): boolean => {
+    let used = false;
+    setDbState((prev) => {
+      const curLc = prev.leetcode || { ...INITIAL_LEETCODE, stats: { ...INITIAL_LEETCODE.stats } };
+      if (curLc.streakFreezesAvailable <= 0) {
+        return prev;
+      }
+      const todayStr = new Date().toLocaleDateString('en-CA');
+      if (curLc.lastFreezeDate === todayStr) {
+        return prev;
+      }
+
+      used = true;
+      const nextLc: LeetCodeState = {
+        ...curLc,
+        streakFreezesAvailable: curLc.streakFreezesAvailable - 1,
+        streakFreezesUsed: (curLc.streakFreezesUsed || 0) + 1,
+        lastFreezeDate: todayStr,
+      };
+
+      const nextState = {
+        ...prev,
+        leetcode: nextLc,
+      };
+
+      dbService.saveLocalUserData(currentUserId, nextState, true);
+      dbService.saveLeetCodeToCloud(currentUserId, nextLc).catch(console.warn);
+      return nextState;
+    });
+    return used;
+  }, [currentUserId]);
+
+  const updateLeetCodeDailyGoal = useCallback(
+    (goal: number) => {
+      setDbState((prev) => {
+        const curLc = prev.leetcode || { ...INITIAL_LEETCODE, stats: { ...INITIAL_LEETCODE.stats } };
+        const nextLc: LeetCodeState = {
+          ...curLc,
+          dailyGoal: Math.max(1, goal),
+        };
+        const nextState = {
+          ...prev,
+          leetcode: nextLc,
+        };
+        dbService.saveLocalUserData(currentUserId, nextState, true);
+        dbService.saveLeetCodeToCloud(currentUserId, nextLc).catch(console.warn);
+        return nextState;
+      });
+    },
+    [currentUserId]
+  );
+
   return (
     <LearningContext.Provider
       value={{
@@ -1177,6 +1507,14 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateSettings,
         resetToDefaults,
         findCanonicalVideo,
+
+        // LeetCode Streak Maintainer
+        leetcode: leetcodeState,
+        logLeetCodeProblem,
+        deleteLeetCodeProblem,
+        syncLeetCodeProfile,
+        useStreakFreeze,
+        updateLeetCodeDailyGoal,
       }}
     >
       {children}

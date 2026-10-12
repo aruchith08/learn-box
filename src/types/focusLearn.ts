@@ -10,9 +10,10 @@ export type TabType =
   | 'dashboard'
   | 'playlists'
   | 'my-videos'
+  | 'catalog'
+  | 'leetcode'
   | 'tracker'
   | 'calendar'
-  | 'catalog'
   | 'bookmarks'
   | 'notes'
   | 'stats'
@@ -153,4 +154,42 @@ export interface CSVImportPreview {
     topic?: string;
     isDuplicate?: boolean;
   }[];
+}
+
+export interface LeetCodeSubmission {
+  id: string;
+  title: string;
+  titleSlug?: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  url: string;
+  tags?: string[];
+  notes?: string;
+  timeSpentMinutes?: number;
+  date: string; // 'YYYY-MM-DD'
+  createdAt: string;
+}
+
+export interface LeetCodeStats {
+  username?: string;
+  currentStreak: number;
+  longestStreak: number;
+  lastSolvedDate?: string;
+  totalSolved: number;
+  easySolved: number;
+  mediumSolved: number;
+  hardSolved: number;
+  ranking?: number;
+  acceptanceRate?: number;
+  lastSyncedAt?: string;
+  submissionCalendar?: Record<string, number>; // unix timestamp string -> count
+}
+
+export interface LeetCodeState {
+  username: string;
+  stats: LeetCodeStats;
+  submissions: LeetCodeSubmission[];
+  dailyGoal: number;
+  streakFreezesAvailable: number;
+  streakFreezesUsed: number;
+  lastFreezeDate?: string;
 }

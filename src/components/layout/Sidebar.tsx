@@ -15,6 +15,7 @@ import {
   IconProps,
   X,
   LayoutGrid,
+  Flame,
 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
 import { TabType } from '../../types/focusLearn';
@@ -36,13 +37,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed = false,
   onToggleCollapse,
 }) => {
-  const { activeTab, setActiveTab } = useLearning();
+  const { activeTab, setActiveTab, leetcode } = useLearning();
 
-  const navItems: { id: TabType; label: string; icon: React.FC<IconProps> }[] = [
+  const navItems: { id: TabType; label: string; icon: React.FC<IconProps>; badge?: string }[] = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
     { id: 'playlists', label: 'My Playlists', icon: FolderClosed },
     { id: 'my-videos', label: 'All Videos', icon: Film },
     { id: 'catalog', label: 'Catalog', icon: LayoutGrid },
+    {
+      id: 'leetcode',
+      label: 'LeetCode',
+      icon: Flame,
+      badge: leetcode?.stats?.currentStreak ? `${leetcode.stats.currentStreak}d` : undefined,
+    },
     { id: 'tracker', label: 'Tracker', icon: CheckSquare2 },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'notes', label: 'Notes', icon: FileText },
@@ -162,6 +169,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   {item.label}
                 </span>
+                {item.badge && !isCollapsed && (
+                  <span
+                    className={`ml-auto text-[10px] font-black font-mono px-1.5 py-0.5 rounded border ${
+                      isActive
+                        ? 'bg-black text-[#FFE600] border-black'
+                        : 'bg-[#FF9F1C] text-black border-black shadow-[1px_1px_0px_#000]'
+                    }`}
+                  >
+                    🔥 {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
