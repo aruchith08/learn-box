@@ -30,6 +30,7 @@ import {
   deleteDoc,
   collection,
   writeBatch,
+  onSnapshot,
 } from 'firebase/firestore';
 
 export const INITIAL_LEETCODE: LeetCodeState = {
@@ -878,6 +879,61 @@ export const dbService = {
     } catch (err) {
       console.warn('Daily problem fetch error:', err);
       return null;
+    }
+  },
+
+  /**
+   * Dedicated surgical save for a single To-Do item directly to cloud
+   */
+  async saveTodoToCloud(userId: string, todo: TodoItem): Promise<void> {
+    if (!db || !userId || userId === 'guest') return;
+    try {
+      const todoRef = doc(db, 'users', userId, 'todos', todo.id);
+      await setDoc(todoRef, sanitizeForFirestore(todo), { merge: true });
+    } catch (e) {
+      console.warn('Error saving todo to cloud:', e);
+    }
+  },
+
+  /**
+   * Real-time subscription to user's todos collection in Firestore.
+   * Enables instant multi-device / multi-tab live sync per user account.
+   */
+  subscribeTodos(
+    userId: string,
+    onUpdate: (todos: TodoItem[]) => void
+  ): () => void {
+    if (!db || !userId || userId === 'guest') {
+      return () => {};
+    }
+    try {
+      const todosCol = collection(db, 'users', userId, 'todos');
+      const unsubscribe = onSnapshot(
+        todosCol,
+        (snapshot) => {
+          const todos: TodoItem[] = [];
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data() as TodoItem;
+            if (data && data.id && data.text) {
+              todos.push(data);
+            }
+          });
+          // Sort by creation date descending (newest first)
+          todos.sort((a, b) => {
+            const timeA = new Date(a.createdAt || 0).getTime();
+            const timeB = new Date(b.createdAt || 0).getTime();
+            return timeB - timeA;
+          });
+          onUpdate(todos);
+        },
+        (error) => {
+          console.warn('Real-time todos sync warning:', error);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn('Error establishing todos listener:', err);
+      return () => {};
     }
   },
 

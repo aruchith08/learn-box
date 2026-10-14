@@ -193,6 +193,30 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [currentUserId]);
 
+  // Real-time Firestore sync for To-Dos per authenticated account
+  useEffect(() => {
+    if (!currentUserId || currentUserId === 'guest') return;
+
+    const unsubscribe = dbService.subscribeTodos(currentUserId, (cloudTodos) => {
+      setDbState((prev) => {
+        const currentTodosStr = JSON.stringify(prev.todos || []);
+        const cloudTodosStr = JSON.stringify(cloudTodos);
+        if (currentTodosStr === cloudTodosStr) return prev;
+
+        const nextState = {
+          ...prev,
+          todos: cloudTodos,
+        };
+        dbService.saveLocalUserData(currentUserId, nextState, false);
+        return nextState;
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [currentUserId]);
+
 
   // Persist on database state change
   const persistState = useCallback(
@@ -1092,16 +1116,24 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
+      if (currentUserId && currentUserId !== 'guest') {
+        dbService.saveTodoToCloud(currentUserId, newTodo).catch(console.warn);
+      }
     },
     [currentUserId]
   );
 
   const toggleTodo = useCallback(
     (id: string) => {
+      let updatedTodo: TodoItem | null = null;
       setDbState((prev) => {
-        const nextTodos = (prev.todos || []).map((t) =>
-          t.id === id ? { ...t, completed: !t.completed, updatedAt: new Date().toISOString() } : t
-        );
+        const nextTodos = (prev.todos || []).map((t) => {
+          if (t.id === id) {
+            updatedTodo = { ...t, completed: !t.completed, updatedAt: new Date().toISOString() };
+            return updatedTodo;
+          }
+          return t;
+        });
         const nextState = {
           ...prev,
           todos: nextTodos,
@@ -1109,6 +1141,9 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         dbService.saveLocalUserData(currentUserId, nextState, true);
         return nextState;
       });
+      if (updatedTodo && currentUserId && currentUserId !== 'guest') {
+        dbService.saveTodoToCloud(currentUserId, updatedTodo).catch(console.warn);
+      }
     },
     [currentUserId]
   );

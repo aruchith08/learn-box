@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, CheckSquare2 } from '../common/focusIcons';
 import { useLearning } from '../../context/LearningContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const TodoBox: React.FC = () => {
   const { todos, addTodo, toggleTodo, deleteTodo, clearCompletedTodos } = useLearning();
+  const { currentUser, openAuthModal } = useAuth();
   const [input, setInput] = useState('');
 
   const completedCount = todos.filter((t) => t.completed).length;
@@ -20,7 +22,7 @@ export const TodoBox: React.FC = () => {
   return (
     <div className="bg-white border-[2.5px] sm:border-[3px] border-[#111111] rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#111111] sm:shadow-[4px_4px_0px_#111111]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-[#FFE600] border-2 border-[#111111] flex items-center justify-center shadow-[1.5px_1.5px_0px_#111111]">
             <CheckSquare2 className="w-3.5 h-3.5 text-[#111111] stroke-[2.5]" />
@@ -29,6 +31,44 @@ export const TodoBox: React.FC = () => {
             TO-DO LIST
           </h2>
         </div>
+
+        {/* Account Cloud Status Badge */}
+        {currentUser ? (
+          <div
+            className="flex items-center gap-1.5 bg-[#DCFCE7] text-[#111111] border-2 border-[#111111] text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-[1.5px_1.5px_0px_#111111]"
+            title={`Cloud Synced to ${currentUser.email || currentUser.displayName || 'your account'}`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse"></span>
+            <span className="truncate max-w-[120px] sm:max-w-[170px]">
+              {currentUser.email ? currentUser.email.split('@')[0] : currentUser.displayName || 'SYNCED'}
+            </span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={openAuthModal}
+            className="flex items-center gap-1.5 bg-[#FEF08A] hover:bg-[#FFE600] text-[#111111] border-2 border-[#111111] text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-[1.5px_1.5px_0px_#111111] cursor-pointer hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+            title="Sign in to sync your tasks across devices"
+          >
+            <span>💾 GUEST</span>
+            <span className="text-[9px] underline text-gray-700">SIGN IN</span>
+          </button>
+        )}
+      </div>
+
+      {/* Subheader with Task Progress Counter and Account Sync Subtitle */}
+      <div className="flex items-center justify-between text-[11px] mb-3 px-0.5">
+        <span className="font-mono text-gray-500 font-semibold text-[10px]">
+          {currentUser ? (
+            <span className="flex items-center gap-1 text-emerald-700 font-bold">
+              <span>☁️</span> Cloud synced to account
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-amber-800 font-medium">
+              <span>💾</span> Local guest list (sign in to sync)
+            </span>
+          )}
+        </span>
 
         <div className="flex items-center gap-1.5">
           <span className="bg-[#FEF08A] text-[#111111] border-2 border-[#111111] text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-[1.5px_1.5px_0px_#111111]">

@@ -10,6 +10,18 @@ export interface CatalogItem {
 }
 
 export const CATALOG_ITEMS: CatalogItem[] = [
+  // Nasscom
+  {
+    id: 'nasscom',
+    title: 'Nasscom',
+    platform: 'Nasscom',
+    url: 'https://skill-assist.ai/nasscom/dashboard#discover',
+    domain: 'skill-assist.ai',
+    icon: '/nasscom-logo.png',
+    fallbackIcon: 'https://www.google.com/s2/favicons?domain=skill-assist.ai&sz=128',
+    bgColor: '#FEF08A', // Pastel Canary
+  },
+
   // HackerRank items
   {
     id: 'hr-algorithms',
