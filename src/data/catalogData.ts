@@ -19,7 +19,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     domain: 'skill-assist.ai',
     icon: '/nasscom-logo.png',
     fallbackIcon: 'https://www.google.com/s2/favicons?domain=skill-assist.ai&sz=128',
-    bgColor: '#FEF08A', // Pastel Canary
+    bgColor: '#FEE2E2', // Pastel Light Reddish
   },
 
   // HackerRank items
